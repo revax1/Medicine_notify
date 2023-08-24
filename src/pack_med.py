@@ -1,7 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_med_pack(object):
+    def __init__(self):
+        self.med_pack = None  # Initialize med_pack as an instance variable
+    
     def setupUi(self, med_pack):
+        self.med_pack = med_pack  # Assign the main window instance to med_pack
         med_pack.setObjectName("med_pack")
         med_pack.resize(1104, 839)
         font = QtGui.QFont()
@@ -52,6 +56,7 @@ class Ui_med_pack(object):
         self.line.setLineWidth(3)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setObjectName("line")
+        
         self.pack_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pack_back_pushButton.setGeometry(QtCore.QRect(50, 80, 131, 41))
         font = QtGui.QFont()
@@ -67,6 +72,7 @@ class Ui_med_pack(object):
         self.frame.setFrameShape(QtWidgets.QFrame.Box)
         self.frame.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame.setObjectName("frame")
+        
         self.step_label = QtWidgets.QLabel(self.frame)
         self.step_label.setGeometry(QtCore.QRect(40, 50, 411, 41))
         font = QtGui.QFont()
@@ -93,17 +99,31 @@ class Ui_med_pack(object):
         self.next_pushButton.setIconSize(QtCore.QSize(30, 30))
         self.next_pushButton.setObjectName("next_pushButton")
         
+        self.next_pushButton.clicked.connect(self.showMedPack2)
+        
         med_pack.setCentralWidget(self.centralwidget)
-
+        
         self.retranslateUi(med_pack)
         QtCore.QMetaObject.connectSlotsByName(med_pack)
         
         med_pack.showFullScreen()
-        
+
         def close_window_1():
             med_pack.close()
 
         self.pack_back_pushButton.clicked.connect(close_window_1)
+        
+    def showMedPack2(self):
+        self.med_pack2 = QtWidgets.QMainWindow()
+        self.ui2 = Ui_med_pack2()
+        self.ui2.setupUi(self.med_pack2, self)
+        self.ui2.showMedPack(self.med_pack2)
+        self.med_pack2.show()
+        
+    def closeMedPack(self):
+        self.med_pack.close()  # Close the main window
+        self.med_pack2.close()
+
 
     def retranslateUi(self, med_pack):
         _translate = QtCore.QCoreApplication.translate
@@ -115,7 +135,9 @@ class Ui_med_pack(object):
 import resources_rc
 
 class Ui_med_pack2(object):
-    def setupUi(self, med_pack2):
+    def setupUi(self, med_pack2, ui_med_pack):
+        self.ui_med_pack = ui_med_pack  # เก็บ instance ของ Ui_med_pack เอาไว้ในตัวแปร
+
         med_pack2.setObjectName("med_pack2")
         med_pack2.resize(1104, 839)
         font = QtGui.QFont()
@@ -125,6 +147,7 @@ class Ui_med_pack2(object):
         med_pack2.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget2 = QtWidgets.QWidget(med_pack2)
         self.centralwidget2.setObjectName("centralwidget2")
+        
         self.packMed2_label = QtWidgets.QLabel(self.centralwidget2)
         self.packMed2_label.setGeometry(QtCore.QRect(230, 50, 681, 71))
         font = QtGui.QFont()
@@ -140,6 +163,7 @@ class Ui_med_pack2(object):
         self.packMed2_label.setAlignment(QtCore.Qt.AlignCenter)
         self.packMed2_label.setWordWrap(True)
         self.packMed2_label.setObjectName("packMed2_label")
+        
         self.pack_icon2_label = QtWidgets.QLabel(self.centralwidget2)
         self.pack_icon2_label.setGeometry(QtCore.QRect(270, 70, 41, 41))
         font = QtGui.QFont()
@@ -157,12 +181,14 @@ class Ui_med_pack2(object):
         self.pack_icon2_label.setAlignment(QtCore.Qt.AlignCenter)
         self.pack_icon2_label.setWordWrap(True)
         self.pack_icon2_label.setObjectName("pack_icon2_label")
+        
         self.line2 = QtWidgets.QFrame(self.centralwidget2)
         self.line2.setGeometry(QtCore.QRect(-20, 180, 1201, 16))
         self.line2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line2.setLineWidth(3)
         self.line2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line2.setObjectName("line2")
+        
         self.pack_back2_pushButton = QtWidgets.QPushButton(self.centralwidget2)
         self.pack_back2_pushButton.setGeometry(QtCore.QRect(50, 80, 131, 41))
         font = QtGui.QFont()
@@ -171,18 +197,21 @@ class Ui_med_pack2(object):
         self.pack_back2_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
 "background-color: rgb(166, 0, 0)")
         self.pack_back2_pushButton.setObjectName("pack_back2_pushButton")
+        
         self.frame2 = QtWidgets.QFrame(self.centralwidget2)
         self.frame2.setGeometry(QtCore.QRect(90, 230, 931, 471))
         self.frame2.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.frame2.setFrameShape(QtWidgets.QFrame.Box)
         self.frame2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame2.setObjectName("frame2")
+        
         self.step2_label = QtWidgets.QLabel(self.frame2)
         self.step2_label.setGeometry(QtCore.QRect(40, 50, 601, 41))
         font = QtGui.QFont()
         font.setPointSize(24)
         self.step2_label.setFont(font)
         self.step2_label.setObjectName("step2_label")
+        
         self.img2_label = QtWidgets.QLabel(self.frame2)
         self.img2_label.setGeometry(QtCore.QRect(230, 160, 451, 231))
         self.img2_label.setText("")
@@ -190,6 +219,7 @@ class Ui_med_pack2(object):
         self.img2_label.setScaledContents(True)
         self.img2_label.setAlignment(QtCore.Qt.AlignCenter)
         self.img2_label.setObjectName("img2_label")
+        
         self.next2_pushButton = QtWidgets.QPushButton(self.centralwidget2)
         self.next2_pushButton.setGeometry(QtCore.QRect(890, 740, 171, 61))
         font = QtGui.QFont()
@@ -201,10 +231,31 @@ class Ui_med_pack2(object):
         self.next2_pushButton.setIcon(icon)
         self.next2_pushButton.setIconSize(QtCore.QSize(30, 30))
         self.next2_pushButton.setObjectName("next2_pushButton")
+        
         med_pack2.setCentralWidget(self.centralwidget2)
 
         self.retranslateUi(med_pack2)
         QtCore.QMetaObject.connectSlotsByName(med_pack2)
+        
+        self.next2_pushButton.clicked.connect(self.closeMedPack)  # เชื่อมตัวดำเนินการปิดหน้าต่าง
+        
+        med_pack2.showFullScreen()
+        
+        def close_window_2():
+            med_pack2.close()
+
+        self.pack_back2_pushButton.clicked.connect(close_window_2)
+        
+    def showMedPack(self, med_pack2):
+
+        self.med_pack2 = med_pack2  # บันทึกตัวแปรเข้าสมาชิกของคลาส
+        self.med_pack2.show()
+        
+    def closeMedPack(self):
+        self.ui_med_pack.closeMedPack()  # เรียกใช้เมธอด closeMedPack ของ Ui_med_pack
+        self.med_pack2.close()  # ปิดหน้าต่างที่เป็นส่วนสมาชิกของ Ui_med_pack2
+
+
 
     def retranslateUi(self, med_pack2):
         _translate = QtCore.QCoreApplication.translate
@@ -218,13 +269,10 @@ import resources_rc
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    
     med_pack = QtWidgets.QMainWindow()
     ui = Ui_med_pack()
     ui.setupUi(med_pack)
-    med_pack.show()
     
-    med_pack2 = QtWidgets.QMainWindow()
-    ui2 = Ui_med_pack2()
-    ui2.setupUi(med_pack2)
-    # med_pack2.show()
+    
     sys.exit(app.exec_())

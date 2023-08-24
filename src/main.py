@@ -224,7 +224,7 @@ class Ui_Medicine_App(object):
         
         def close_pack_window():
             self.pack_window.close()
-        
+            
         self.ui_pack.pack_back_pushButton.clicked.connect(close_pack_window)
 
     def retranslateUi(self, Medicine_App):
