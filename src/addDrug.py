@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import pymongo
 
 class Ui_Add_drug(object):
     def setupUi(self, Add_drug):
@@ -92,6 +93,9 @@ class Ui_Add_drug(object):
         
         self.listWidget = QtWidgets.QListWidget(self.centralwidget)
         self.listWidget.setGeometry(QtCore.QRect(680, 290, 341, 411))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.listWidget.setFont(font)
         self.listWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.listWidget.setFrameShape(QtWidgets.QFrame.Box)
         self.listWidget.setFrameShadow(QtWidgets.QFrame.Plain)
@@ -111,7 +115,7 @@ class Ui_Add_drug(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.pushButton.setFont(font)
-        self.pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
+        self.pushButton.setStyleSheet("color: rgb(255, 255, 255);border: 2px solid rgb(85, 170, 127); border-radius: 10px;\n"
 "background-color: rgb(85, 170, 127);")
         self.pushButton.setObjectName("pushButton")
         
@@ -120,7 +124,7 @@ class Ui_Add_drug(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.delete_pushButton.setFont(font)
-        self.delete_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.delete_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);border: 1px solid rgb(0, 0, 0); border-radius: 10px;")
         self.delete_pushButton.setObjectName("delete_pushButton")
         
         self.add_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -128,7 +132,7 @@ class Ui_Add_drug(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.add_back_pushButton.setFont(font)
-        self.add_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
+        self.add_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);border: 2px solid rgb(166, 0, 0); border-radius: 10px;\n"
 "background-color: rgb(166, 0, 0)")
         self.add_back_pushButton.setObjectName("add_back_pushButton")
         
@@ -143,6 +147,110 @@ class Ui_Add_drug(object):
             Add_drug.close()
             
         self.add_back_pushButton.clicked.connect(close_window)
+        
+        # เชื่อมต่อกับฟังก์ชัน save_drug                                                                          เพิ่งเพิ่มล่าสุด
+        self.pushButton.clicked.connect(self.save_drug)
+        
+        # เชื่อมต่อกับฟังก์ชัน delete_drug
+        self.delete_pushButton.clicked.connect(self.delete_drug)
+
+        # เรียกฟังก์ชันแสดงรายการยาที่มี
+        self.load_drug_list()
+
+    def save_drug(self):
+        # รับข้อมูลที่ผู้ใช้กรอกจาก UI
+        drug_name = self.textEdit.toPlainText()
+        drug_description = self.textEdit_2.toPlainText()
+
+        # เชื่อมต่อกับ MongoDB
+        client = pymongo.MongoClient()
+        db = client["Medicine-Notify"]
+        col = db["Drug"]
+
+        # เพิ่มข้อมูลลงในคอลเลกชัน
+        col.insert_one({"name": drug_name, "description": drug_description})
+
+        # สร้าง QDialog และกำหนดสไตล์
+        message_dialog = QtWidgets.QDialog(self.centralwidget)
+        message_dialog.setWindowTitle("บันทึกสำเร็จ")
+        message_dialog.setModal(True)
+        message_dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+
+        # Create and configure QLabel
+        message_label = QtWidgets.QLabel(message_dialog)
+        message_label.setText("\nบันทึกข้อมูลยาเรียบร้อยแล้ว   \n")
+        font = QtGui.QFont()
+        font.setPointSize(22)
+        message_label.setFont(font)
+        message_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Create and configure OK button
+        ok_button = QtWidgets.QPushButton(message_dialog)
+        ok_button.setText("OK")
+        ok_button_font = QtGui.QFont()
+        ok_button_font.setPointSize(22)
+        ok_button.setFont(ok_button_font)
+
+        # Set background color for the dialog
+        message_dialog.setStyleSheet("background-color: rgb(255, 255, 200); border-radius: 30px;")
+
+        # Set button background and text color
+        ok_button.setStyleSheet("background-color: rgb(85, 170, 127); color: white; border: none; border-radius: 15px;")
+
+        # Set QDialog layout
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(message_label)
+        layout.addWidget(ok_button)
+        message_dialog.setLayout(layout)
+
+        # Connect the OK button's click event to close the dialog
+        ok_button.clicked.connect(message_dialog.accept)
+
+        # Show the QDialog
+        message_dialog.exec_()
+        
+        # ล้างข้อมูลใน textEdit และ textEdit_2
+        self.textEdit.clear()
+        self.textEdit_2.clear()
+        
+        # เรียกฟังก์ชันแสดงรายการยาที่มี                                                                            เพิ่งเพิ่มล่าสุด
+        self.load_drug_list()
+
+    def delete_drug(self):                                                                                
+        # รับรายการที่เลือกจาก UI
+        selected_item = self.listWidget.currentItem()
+
+        if selected_item:
+            # ดึงชื่อยาจากรายการที่เลือก
+            drug_name = selected_item.text()
+
+            # เชื่อมต่อกับ MongoDB
+            client = pymongo.MongoClient()
+            db = client["Medicine-Notify"]
+            col = db["Drug"]
+
+            # ลบรายการยาออกจากคอลเลกชัน
+            col.delete_one({"name": drug_name})
+
+            # เรียกฟังก์ชันแสดงรายการยาที่มี
+            self.load_drug_list()
+
+    def load_drug_list(self):
+        # เชื่อมต่อกับ MongoDB
+        client = pymongo.MongoClient()
+        db = client["Medicine-Notify"]
+        col = db["Drug"]
+
+        # ดึงข้อมูลยาทั้งหมดจากคอลเลกชัน
+        drugs = col.find()
+
+        # ล้างรายการยาที่มีอยู่ใน UI
+        self.listWidget.clear()
+
+        # แสดงข้อมูลยาในรายการ
+        for drug in drugs:
+            drug_name = drug.get("name", "ไม่มีชื่อยา")
+            self.listWidget.addItem(drug_name)
 
 
     def retranslateUi(self, Add_drug):

@@ -62,7 +62,7 @@ class Ui_med_pack(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.pack_back_pushButton.setFont(font)
-        self.pack_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
+        self.pack_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);border: 1px solid rgb(166, 0, 0); border-radius: 10px;\n"
 "background-color: rgb(166, 0, 0)")
         self.pack_back_pushButton.setObjectName("pack_back_pushButton")
         
@@ -92,7 +92,7 @@ class Ui_med_pack(object):
         font = QtGui.QFont()
         font.setPointSize(14)
         self.next_pushButton.setFont(font)
-        self.next_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);")
+        self.next_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);border: 1px solid rgb(0, 0, 0); border-radius: 10px;")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/next_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.next_pushButton.setIcon(icon)
@@ -194,7 +194,7 @@ class Ui_med_pack2(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.pack_back2_pushButton.setFont(font)
-        self.pack_back2_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
+        self.pack_back2_pushButton.setStyleSheet("color: rgb(255, 255, 255);border: 1px solid rgb(166, 0, 0); border-radius: 10px;\n"
 "background-color: rgb(166, 0, 0)")
         self.pack_back2_pushButton.setObjectName("pack_back2_pushButton")
         
@@ -225,7 +225,7 @@ class Ui_med_pack2(object):
         font = QtGui.QFont()
         font.setPointSize(14)
         self.next2_pushButton.setFont(font)
-        self.next2_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);")
+        self.next2_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);border: 1px solid rgb(0, 0, 0); border-radius: 10px;")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/next_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.next2_pushButton.setIcon(icon)

@@ -26,7 +26,7 @@ class Ui_Medicine_App(object):
         font.setBold(True)
         font.setWeight(75)
         self.addDrug_pushButton.setFont(font)
-        self.addDrug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
+        self.addDrug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);border: 1px solid rgb(0, 0, 0); border-radius: 10px;\n"
 "border-color: rgb(0, 0, 0);")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/icons/drug_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -67,7 +67,7 @@ class Ui_Medicine_App(object):
         font.setBold(True)
         font.setWeight(75)
         self.setting_pushButton.setFont(font)
-        self.setting_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
+        self.setting_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);border: 1px solid rgb(0, 0, 0); border-radius: 10px;\n"
 "border-color: rgb(0, 0, 0);")
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/icons/setting_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -85,7 +85,7 @@ class Ui_Medicine_App(object):
         font.setBold(True)
         font.setWeight(75)
         self.putDrug_pushButton.setFont(font)
-        self.putDrug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
+        self.putDrug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);border: 1px solid rgb(0, 0, 0); border-radius: 10px;\n"
 "border-color: rgb(0, 0, 0);")
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(":/icons/istockphoto-1263011147-170667a.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -103,7 +103,7 @@ class Ui_Medicine_App(object):
         font.setBold(True)
         font.setWeight(75)
         self.alignment_pushButton.setFont(font)
-        self.alignment_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
+        self.alignment_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);border: 1px solid rgb(0, 0, 0); border-radius: 10px;\n"
 "border-color: rgb(0, 0, 0);")
         icon4 = QtGui.QIcon()
         icon4.addPixmap(QtGui.QPixmap(":/icons/Industry-Rack-icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -121,7 +121,7 @@ class Ui_Medicine_App(object):
         font.setBold(True)
         font.setWeight(75)
         self.drugLeft_pushButton.setFont(font)
-        self.drugLeft_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
+        self.drugLeft_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);border: 1px solid rgb(0, 0, 0); border-radius: 10px;\n"
 "border-color: rgb(0, 0, 0);")
         icon5 = QtGui.QIcon()
         icon5.addPixmap(QtGui.QPixmap(":/icons/table_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -226,6 +226,15 @@ class Ui_Medicine_App(object):
             self.pack_window.close()
             
         self.ui_pack.pack_back_pushButton.clicked.connect(close_pack_window)
+        
+    def animate_button(self):
+        sender_button = self.sender()  # ดึงปุ่มที่กดจาก sender()
+        animation = QtCore.QPropertyAnimation(sender_button, b"geometry")
+        animation.setDuration(100)  # ระยะเวลาในการทำแอนิเมชั่น (มีหน่วยเป็นมิลลิวินาที)
+        animation.setStartValue(sender_button.geometry())
+        animation.setEndValue(sender_button.geometry().translated(0, 10))  # แกน y เพิ่มขึ้น 10 พิกเซล
+        animation.setEasingCurve(QtCore.QEasingCurve.OutBounce)  # การเลือกวิธีทำให้แอนิเมชั่นดูเรียบร้อยขึ้น
+        animation.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
     def retranslateUi(self, Medicine_App):
         _translate = QtCore.QCoreApplication.translate
