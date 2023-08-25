@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton
 import pymongo
 
 class Ui_Add_drug(object):
@@ -178,7 +179,7 @@ class Ui_Add_drug(object):
 
         # Create and configure QLabel
         message_label = QtWidgets.QLabel(message_dialog)
-        message_label.setText("\nบันทึกข้อมูลยาเรียบร้อยแล้ว   \n")
+        message_label.setText("บันทึกข้อมูลยาเรียบร้อยแล้ว")
         font = QtGui.QFont()
         font.setPointSize(22)
         message_label.setFont(font)
@@ -186,13 +187,13 @@ class Ui_Add_drug(object):
 
         # Create and configure OK button
         ok_button = QtWidgets.QPushButton(message_dialog)
-        ok_button.setText("OK")
+        ok_button.setText("ตกลง")
         ok_button_font = QtGui.QFont()
         ok_button_font.setPointSize(22)
         ok_button.setFont(ok_button_font)
 
         # Set background color for the dialog
-        message_dialog.setStyleSheet("background-color: rgb(255, 255, 200); border-radius: 30px;")
+        message_dialog.setStyleSheet("background-color: rgb(255, 241, 129); border-radius: 30px;")
 
         # Set button background and text color
         ok_button.setStyleSheet("background-color: rgb(85, 170, 127); color: white; border: none; border-radius: 15px;")
@@ -201,6 +202,7 @@ class Ui_Add_drug(object):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(message_label)
         layout.addWidget(ok_button)
+        layout.setContentsMargins(50, 30, 50, 30)  # Add margins to the layout (left, top, right, bottom)
         message_dialog.setLayout(layout)
 
         # Connect the OK button's click event to close the dialog
@@ -224,16 +226,64 @@ class Ui_Add_drug(object):
             # ดึงชื่อยาจากรายการที่เลือก
             drug_name = selected_item.text()
 
-            # เชื่อมต่อกับ MongoDB
-            client = pymongo.MongoClient()
-            db = client["Medicine-Notify"]
-            col = db["Drug"]
+            # สร้าง QDialog สำหรับการยืนยันการลบ
+            confirm_dialog = QDialog(self.centralwidget)
+            confirm_dialog.setWindowTitle("ยืนยันการลบ")
+            confirm_dialog.setModal(True)
+            confirm_dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
 
-            # ลบรายการยาออกจากคอลเลกชัน
-            col.delete_one({"name": drug_name})
+            # สร้าง QLabel แสดงข้อความยืนยัน
+            confirm_label = QtWidgets.QLabel(confirm_dialog)
+            confirm_label.setText( f"คุณต้องการลบรายการยา '{drug_name}' ใช่หรือไม่?")
+            font = QtGui.QFont()
+            font.setPointSize(22)
+            confirm_label.setFont(font)
+            confirm_label.setAlignment(QtCore.Qt.AlignCenter)
+            
 
-            # เรียกฟังก์ชันแสดงรายการยาที่มี
-            self.load_drug_list()
+            # สร้างปุ่ม OK และ Cancel
+            ok_button = QPushButton("ใช่", confirm_dialog)
+            ok_button_font = QtGui.QFont()
+            ok_button_font.setPointSize(22)
+            ok_button.setFont(ok_button_font)
+            cancel_button = QPushButton("ไม่", confirm_dialog)
+            cancel_button_font = QtGui.QFont()
+            cancel_button_font.setPointSize(22)
+            cancel_button.setFont(ok_button_font)
+
+            
+            confirm_dialog.setStyleSheet("background-color: rgb(255, 241, 129); border-radius: 30px;")
+
+            # กำหนดรูปแบบสไตล์ของปุ่ม
+            ok_button.setStyleSheet("background-color: rgb(85, 170, 127); color: white; border: none; border-radius: 10px;")
+            cancel_button.setStyleSheet("background-color: rgb(166, 0, 0); color: white; border: none; border-radius: 10px;")
+
+            # สร้างเครื่องหมายสำหรับการปิด Dialog
+            ok_button.clicked.connect(confirm_dialog.accept)
+            cancel_button.clicked.connect(confirm_dialog.reject)
+
+            # สร้าง Layout และเพิ่มวัตถุลงไป
+            layout = QVBoxLayout()
+            layout.addWidget(confirm_label)
+            layout.addWidget(ok_button)
+            layout.addWidget(cancel_button)
+            layout.setContentsMargins(50, 30, 50, 30)  # Add margins to the layout (left, top, right, bottom)
+            confirm_dialog.setLayout(layout)
+
+            # แสดง Dialog และตรวจสอบผลลัพธ์
+            result = confirm_dialog.exec_()
+
+            if result == QDialog.Accepted:
+                # เชื่อมต่อกับ MongoDB
+                client = pymongo.MongoClient()
+                db = client["Medicine-Notify"]
+                col = db["Drug"]
+
+                # ลบรายการยาออกจากคอลเลกชัน
+                col.delete_one({"name": drug_name})
+
+                # เรียกฟังก์ชันแสดงรายการยาที่มี
+                self.load_drug_list()
 
     def load_drug_list(self):
         # เชื่อมต่อกับ MongoDB
