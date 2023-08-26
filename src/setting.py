@@ -1,6 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-
 class Ui_setting(object):
     def setupUi(self, setting):
         setting.setObjectName("setting")
@@ -46,6 +45,7 @@ class Ui_setting(object):
         self.line.setLineWidth(3)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setObjectName("line")
+        
         self.bb_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bb_checkBox.setGeometry(QtCore.QRect(60, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -58,13 +58,12 @@ class Ui_setting(object):
         self.bb_checkBox.setFont(font)
         self.bb_checkBox.setFocusPolicy(QtCore.Qt.WheelFocus)
         self.bb_checkBox.setText("")
-        
         self.bb_checkBox.setStyleSheet("")
-        
         self.bb_checkBox.setTristate(False)
         self.bb_checkBox.setObjectName("bb_checkBox")
+        
         self.ab_checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.ab_checkBox.setGeometry(QtCore.QRect(820, 480, 61, 71))
+        self.ab_checkBox.setGeometry(QtCore.QRect(60, 480, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -77,6 +76,7 @@ class Ui_setting(object):
         self.ab_checkBox.setText("")
         self.ab_checkBox.setTristate(False)
         self.ab_checkBox.setObjectName("ab_checkBox")
+        
         self.bl_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bl_checkBox.setGeometry(QtCore.QRect(820, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -91,6 +91,7 @@ class Ui_setting(object):
         self.bl_checkBox.setText("")
         self.bl_checkBox.setTristate(False)
         self.bl_checkBox.setObjectName("bl_checkBox")
+        
         self.al_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.al_checkBox.setGeometry(QtCore.QRect(440, 480, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -105,6 +106,7 @@ class Ui_setting(object):
         self.al_checkBox.setText("")
         self.al_checkBox.setTristate(False)
         self.al_checkBox.setObjectName("al_checkBox")
+        
         self.bd_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bd_checkBox.setGeometry(QtCore.QRect(440, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -119,8 +121,9 @@ class Ui_setting(object):
         self.bd_checkBox.setText("")
         self.bd_checkBox.setTristate(False)
         self.bd_checkBox.setObjectName("bd_checkBox")
+        
         self.ad_checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.ad_checkBox.setGeometry(QtCore.QRect(60, 480, 61, 71))
+        self.ad_checkBox.setGeometry(QtCore.QRect(820, 480, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -133,6 +136,7 @@ class Ui_setting(object):
         self.ad_checkBox.setText("")
         self.ad_checkBox.setTristate(False)
         self.ad_checkBox.setObjectName("ad_checkBox")
+        
         self.bbed_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bbed_checkBox.setGeometry(QtCore.QRect(440, 700, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -172,18 +176,21 @@ class Ui_setting(object):
         self.line_2.setLineWidth(3)
         self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_2.setObjectName("line_2")
+        
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setGeometry(QtCore.QRect(360, 190, 20, 441))
         self.line_3.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_3.setLineWidth(3)
         self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_3.setObjectName("line_3")
+        
         self.line_4 = QtWidgets.QFrame(self.centralwidget)
         self.line_4.setGeometry(QtCore.QRect(740, 190, 20, 441))
         self.line_4.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_4.setLineWidth(3)
         self.line_4.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_4.setObjectName("line_4")
+        
         self.bb_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.bb_pushButton.setEnabled(False)
         self.bb_pushButton.setGeometry(QtCore.QRect(100, 330, 191, 71))
@@ -193,6 +200,7 @@ class Ui_setting(object):
         self.bb_pushButton.setAutoFillBackground(False)
         self.bb_pushButton.setStyleSheet("background-color: rgb(255, 198, 199);border: 1px solid rgb(255, 198, 199); border-radius: 10px;")
         self.bb_pushButton.setObjectName("bb_pushButton")
+        
         self.ab_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.ab_pushButton.setEnabled(False)
         self.ab_pushButton.setGeometry(QtCore.QRect(100, 480, 191, 71))
@@ -201,6 +209,7 @@ class Ui_setting(object):
         self.ab_pushButton.setFont(font)
         self.ab_pushButton.setStyleSheet("background-color: rgb(255, 232, 194);border: 1px solid rgb(255, 232, 194); border-radius: 10px;")
         self.ab_pushButton.setObjectName("ab_pushButton")
+        
         self.bl_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.bl_pushButton.setEnabled(False)
         self.bl_pushButton.setGeometry(QtCore.QRect(480, 330, 191, 71))
@@ -209,6 +218,7 @@ class Ui_setting(object):
         self.bl_pushButton.setFont(font)
         self.bl_pushButton.setStyleSheet("background-color: rgb(255, 254, 202);border: 1px solid rgb(255, 254, 202); border-radius: 10px;")
         self.bl_pushButton.setObjectName("bl_pushButton")
+        
         self.al_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.al_pushButton.setEnabled(False)
         self.al_pushButton.setGeometry(QtCore.QRect(480, 480, 191, 71))
@@ -217,6 +227,7 @@ class Ui_setting(object):
         self.al_pushButton.setFont(font)
         self.al_pushButton.setStyleSheet("background-color: rgb(219, 255, 199);border: 1px solid rgb(219, 255, 199); border-radius: 10px;")
         self.al_pushButton.setObjectName("al_pushButton")
+        
         self.bd_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.bd_pushButton.setEnabled(False)
         self.bd_pushButton.setGeometry(QtCore.QRect(860, 330, 191, 71))
@@ -225,6 +236,7 @@ class Ui_setting(object):
         self.bd_pushButton.setFont(font)
         self.bd_pushButton.setStyleSheet("background-color: rgb(185, 227, 255);border: 1px solid rgb(185, 227, 255); border-radius: 10px;")
         self.bd_pushButton.setObjectName("bd_pushButton")
+        
         self.ad_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.ad_pushButton.setEnabled(False)
         self.ad_pushButton.setGeometry(QtCore.QRect(860, 480, 191, 71))
@@ -233,6 +245,7 @@ class Ui_setting(object):
         self.ad_pushButton.setFont(font)
         self.ad_pushButton.setStyleSheet("background-color: rgb(201, 205, 255);border: 1px solid rgb(201, 205, 255); border-radius: 10px;")
         self.ad_pushButton.setObjectName("ad_pushButton")
+        
         self.bbed_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.bbed_pushButton.setEnabled(False)
         self.bbed_pushButton.setGeometry(QtCore.QRect(480, 700, 191, 71))
@@ -241,6 +254,7 @@ class Ui_setting(object):
         self.bbed_pushButton.setFont(font)
         self.bbed_pushButton.setStyleSheet("background-color: rgb(250, 211, 255);border: 1px solid rgb(250, 211, 255); border-radius: 10px;")
         self.bbed_pushButton.setObjectName("bbed_pushButton")
+        
         self.b_label = QtWidgets.QLabel(self.centralwidget)
         self.b_label.setGeometry(QtCore.QRect(120, 240, 131, 41))
         font = QtGui.QFont()
@@ -248,20 +262,23 @@ class Ui_setting(object):
         self.b_label.setFont(font)
         self.b_label.setAlignment(QtCore.Qt.AlignCenter)
         self.b_label.setObjectName("b_label")
-        self.a_label = QtWidgets.QLabel(self.centralwidget)
-        self.a_label.setGeometry(QtCore.QRect(500, 240, 131, 41))
+        
+        self.l_label = QtWidgets.QLabel(self.centralwidget)
+        self.l_label.setGeometry(QtCore.QRect(500, 240, 131, 41))
         font = QtGui.QFont()
         font.setPointSize(20)
-        self.a_label.setFont(font)
-        self.a_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.a_label.setObjectName("a_label")
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(880, 240, 131, 41))
+        self.l_label.setFont(font)
+        self.l_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.l_label.setObjectName("l_label")
+        
+        self.d_label = QtWidgets.QLabel(self.centralwidget)
+        self.d_label.setGeometry(QtCore.QRect(880, 240, 131, 41))
         font = QtGui.QFont()
         font.setPointSize(20)
-        self.label_3.setFont(font)
-        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_3.setObjectName("label_3")
+        self.d_label.setFont(font)
+        self.d_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.d_label.setObjectName("d_label")
+        
         self.setting_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.setting_back_pushButton.setGeometry(QtCore.QRect(50, 80, 131, 41))
         font = QtGui.QFont()
@@ -323,18 +340,18 @@ class Ui_setting(object):
 
         self.retranslateUi(setting)
         self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignore
-        self.ad_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
+        self.ab_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
         self.bd_checkBox.clicked['bool'].connect(self.bl_pushButton.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_pushButton.setEnabled) # type: ignore
         self.bl_checkBox.clicked['bool'].connect(self.bd_pushButton.setEnabled) # type: ignore
-        self.ab_checkBox.clicked['bool'].connect(self.ad_pushButton.setEnabled) # type: ignore
+        self.ad_checkBox.clicked['bool'].connect(self.ad_pushButton.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_pushButton.setEnabled) # type: ignore
         self.bb_checkBox.clicked['bool'].connect(self.bb_cr_label.setEnabled) # type: ignore
         self.bd_checkBox.clicked['bool'].connect(self.bl_cr_label.setEnabled) # type: ignore
         self.bl_checkBox.clicked['bool'].connect(self.bd_cr_label.setEnabled) # type: ignore
-        self.ad_checkBox.clicked['bool'].connect(self.ab_cr_label.setEnabled) # type: ignore
+        self.ab_checkBox.clicked['bool'].connect(self.ab_cr_label.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_cr_label.setEnabled) # type: ignore
-        self.ab_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
+        self.ad_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_cr_label.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(setting)
         
@@ -357,8 +374,8 @@ class Ui_setting(object):
         self.ad_pushButton.setText(_translate("setting", "หลัง อาหาร"))
         self.bbed_pushButton.setText(_translate("setting", "ก่อน อาหาร"))
         self.b_label.setText(_translate("setting", "มื้อเช้า"))
-        self.a_label.setText(_translate("setting", "มื้อเที่ยง"))
-        self.label_3.setText(_translate("setting", "มื้อเย็น"))
+        self.l_label.setText(_translate("setting", "มื้อเที่ยง"))
+        self.d_label.setText(_translate("setting", "มื้อเย็น"))
         self.setting_back_pushButton.setText(_translate("setting", "ย้อนกลับ"))
 import resources_rc
 

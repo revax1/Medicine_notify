@@ -1,9 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from addDrug import Ui_Add_drug
 from setting import Ui_setting
-from pack_med import Ui_med_pack, Ui_med_pack2
+from pack_med import Ui_med_pack
 import datetime
 from PyQt5.QtCore import QTimer
+
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True) #enable highdpi scaling
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True) #use highdpi icons
 
 class Ui_Medicine_App(object):
     def setupUi(self, Medicine_App):
