@@ -332,13 +332,13 @@ class Ui_setting(object):
         QtCore.QMetaObject.connectSlotsByName(setting)
 
          # เพิ่มการเชื่อมต่อปุ่มกับฟังก์ชันเพื่อเปิดหน้าต่างที่ถูกต้อง
-        self.bb_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "เช้า"))
-        self.ab_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลัง", "เช้า"))
-        self.bl_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "เที่ยง"))
-        self.al_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลัง", "เที่ยง"))
-        self.bd_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "เย็น"))
-        self.ad_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลัง", "เย็น"))
-        self.bbed_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "ก่อนนอน"))
+        self.bb_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อนอาหาร", "เช้า"))
+        self.ab_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลังอาหาร", "เช้า"))
+        self.bl_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อนอาหาร", "เที่ยง"))
+        self.al_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลังอาหาร", "เที่ยง"))
+        self.bd_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อนอาหาร", "เย็น"))
+        self.ad_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลังอาหาร", "เย็น"))
+        self.bbed_pushButton.clicked.connect(lambda: self.open_drug_timing_page("", "ก่อนนอน"))
         
         def close_window():
             setting.close()
@@ -350,7 +350,7 @@ class Ui_setting(object):
         self.drug_timing_window = QtWidgets.QMainWindow()
         self.drug_timing_ui = Ui_select_drug()
         self.drug_timing_ui.setupUi(self.drug_timing_window)
-        self.drug_timing_ui.set_drug_timing(f"{meal} {timing} อาหาร")
+        self.drug_timing_ui.set_drug_timing(f"{meal} {timing}")
         
         self.drug_timing_window.show()
 
@@ -364,7 +364,7 @@ class Ui_setting(object):
         self.al_pushButton.setText(_translate("setting", "หลัง อาหาร"))
         self.bd_pushButton.setText(_translate("setting", "ก่อน อาหาร"))
         self.ad_pushButton.setText(_translate("setting", "หลัง อาหาร"))
-        self.bbed_pushButton.setText(_translate("setting", "ก่อน อาหาร"))
+        self.bbed_pushButton.setText(_translate("setting", "ก่อนนอน"))
         self.b_label.setText(_translate("setting", "มื้อเช้า"))
         self.a_label.setText(_translate("setting", "มื้อเที่ยง"))
         self.label_3.setText(_translate("setting", "มื้อเย็น"))

@@ -106,7 +106,7 @@ class Ui_select_drug(object):
         font.setPointSize(10)
         self.pushButton_3.setFont(font)
         self.pushButton_3.setStyleSheet("color: rgb(255, 255, 255);\n"
-"background-color: rgb(81, 179, 85);")
+                                        "background-color: rgb(81, 179, 85);")
         self.pushButton_3.setObjectName("pushButton_3")
         self.drugHave_label_3 = QtWidgets.QLabel(self.centralwidget)
         self.drugHave_label_3.setGeometry(QtCore.QRect(10, 310, 231, 31))
@@ -132,6 +132,65 @@ class Ui_select_drug(object):
         self.drug_timing_label.setObjectName("drug_timing_label")
 
 
+        self.pushButton_3.clicked.connect(self.open_add_drug_page)
+        self.pushButton_2.clicked.connect(self.delete_selected_drugs)
+
+       
+        self.load_all_drugs()  # Load all drugs with checkboxes
+
+        # Connect the delete button to the delete_selected_drugs method
+        self.pushButton_2.clicked.connect(self.delete_selected_drugs)
+
+        # Connect the "Add Drug" button to the open_add_drug_page method
+        self.pushButton_3.clicked.connect(self.open_add_drug_page)
+
+        # Load drug names from the database into the 'เลือกรายการยาที่ต้องการ' list
+        self.load_drug_list()
+
+
+    def load_all_drugs(self):
+        # Connect to MongoDB
+        client = pymongo.MongoClient()
+        db = client["Medicine-Notify"]
+        col = db["Drug"]
+
+        # Retrieve all drugs from the collection
+        drugs = col.find()
+
+        # Clear the list before adding new items
+        self.listWidget_2.clear()
+
+        # Display drug data in the list
+        for drug in drugs:
+            drug_name = drug.get("name", "ไม่มีชื่อยา")
+            checkbox_item = QtWidgets.QListWidgetItem(drug_name)
+            checkbox = QtWidgets.QCheckBox()
+            checkbox_item.setSizeHint(QtCore.QSize(200, 30))
+            self.listWidget_2.addItem(checkbox_item)
+            self.listWidget_2.setItemWidget(checkbox_item, checkbox)
+
+    
+    def get_selected_drugs(self):
+        selected_drugs = []
+        for index in range(self.listWidget_2.count()):
+            checkbox_item = self.listWidget_2.item(index)
+            checkbox = self.listWidget_2.itemWidget(checkbox_item)
+            if checkbox.isChecked():
+                selected_drugs.append(checkbox_item.text())
+        return selected_drugs
+    
+
+    def delete_selected_drugs(self):
+        # Clear the 'รายการยาของมื้อนี้' list
+        self.listWidget.clear()
+
+        # Get the selected drugs from the 'เลือกรายการยาที่ต้องการ' list
+        selected_drugs = self.get_selected_drugs()
+
+        # Add the selected drugs to the 'รายการยาของมื้อนี้' list
+        for drug in selected_drugs:
+            self.listWidget.addItem(drug)
+
     def set_drug_timing(self, text):
         self.drug_timing_label.setText(text)
 
@@ -148,21 +207,25 @@ class Ui_select_drug(object):
         self.drugHave_label_3.setText(_translate("select_drug", "หากไม่มียาที่ต้องการ กดปุ่มด้านล่างนี้"))
 
     def load_drug_list(self):
-        # เชื่อมต่อกับ MongoDB
+        # Connect to MongoDB
         client = pymongo.MongoClient()
         db = client["Medicine-Notify"]
         col = db["Drug"]
 
-        # ดึงข้อมูลยาทั้งหมดจากคอลเลกชัน
+        # Retrieve all drugs from the collection
         drugs = col.find()
 
-        # ล้างรายการยาที่มีอยู่ใน UI
-        self.listWidget.clear()
+        # Clear the list before adding new items
+        self.listWidget_2.clear()
 
-        # แสดงข้อมูลยาในรายการ
+        # Display drug data in the list with checkboxes
         for drug in drugs:
             drug_name = drug.get("name", "ไม่มีชื่อยา")
-            self.listWidget.addItem(drug_name)
+            checkbox_item = QtWidgets.QListWidgetItem(drug_name)
+            checkbox = QtWidgets.QCheckBox()
+            checkbox_item.setSizeHint(QtCore.QSize(200, 30))
+            self.listWidget_2.addItem(checkbox_item)
+            self.listWidget_2.setItemWidget(checkbox_item, checkbox)
 
     def open_add_drug_page(self):
         from addDrug import Ui_Add_drug  # ชื่อไฟล์ของ UI ของหน้า 'เพิ่มยา'
@@ -178,6 +241,8 @@ class Ui_select_drug(object):
     # def update_drug_list(self, event):
     #     self.load_drug_list()
     #     event.accept()
+
+
 
 
 import resources_rc
