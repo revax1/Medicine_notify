@@ -112,7 +112,7 @@ class Ui_Add_drug(object):
         self.drugHave_label.setObjectName("drugHave_label")
         
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(180, 690, 131, 41))
+        self.pushButton.setGeometry(QtCore.QRect(180, 60, 131, 41))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.pushButton.setFont(font)
@@ -143,7 +143,12 @@ class Ui_Add_drug(object):
         QtCore.QMetaObject.connectSlotsByName(Add_drug)
         
         Add_drug.showFullScreen()
-    
+
+        self.add_drug_window = Add_drug  # เก็บ reference ของหน้าต่างเพื่อใช้ในฟังก์ชัน close_event
+
+         # เชื่อมต่อกับฟังก์ชัน clear_fields
+        self.delete_pushButton.clicked.connect(self.clear_fields)
+
         def close_window():
             Add_drug.close()
             
@@ -157,6 +162,16 @@ class Ui_Add_drug(object):
 
         # เรียกฟังก์ชันแสดงรายการยาที่มี
         self.load_drug_list()
+
+    def close_event(self, event):
+        # เมื่อหน้าต่างถูกปิด เรียกฟังก์ชัน clear_fields จากหน้าต่างหลัก
+        self.clear_fields()
+        event.accept()
+
+    def clear_fields(self):
+        # เคลียร์เนื้อหาใน QTextEdit
+        self.textEdit.clear()
+        self.textEdit_2.clear()
 
     def save_drug(self):
         # รับข้อมูลที่ผู้ใช้กรอกจาก UI
