@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton
 import pymongo
 
+
 class Ui_Add_drug(object):
     def setupUi(self, Add_drug):
         Add_drug.setObjectName("Add_drug")

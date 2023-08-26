@@ -315,7 +315,7 @@ class Ui_setting(object):
         setting.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(setting)
-        self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignore
+        self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignor
         self.ad_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
         self.bl2_checkBox.clicked['bool'].connect(self.bl_pushButton.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_pushButton.setEnabled) # type: ignore

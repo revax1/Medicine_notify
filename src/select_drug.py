@@ -123,7 +123,7 @@ class Ui_select_drug(object):
         self.pushButton_3.clicked.connect(self.open_add_drug_page)
 
     def set_drug_timing(self, timing):
-        # กำหนดเวลาการรับประทานยา (ก่อน หรือ หลัง) ที่ถูกส่งมาจากหน้า 'เลือกมื้อของยา'
+        # กำหนดเวลาการรับประทานยา (ก่อน หรือ หลัง) ที่ถูกส่งมาจากหน้า 'เลือกมื้อของยา
         self.drug_timing_label.setText(f"เลือกยาก่อน/หลัง {timing} อาหาร")
 
     def retranslateUi(self, select_drug):
