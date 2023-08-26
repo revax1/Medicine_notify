@@ -122,9 +122,19 @@ class Ui_select_drug(object):
 
         self.pushButton_3.clicked.connect(self.open_add_drug_page)
 
-    def set_drug_timing(self, timing):
-        # กำหนดเวลาการรับประทานยา (ก่อน หรือ หลัง) ที่ถูกส่งมาจากหน้า 'เลือกมื้อของยา
-        self.drug_timing_label.setText(f"เลือกยาก่อน/หลัง {timing} อาหาร")
+
+        self.drug_timing_label = QtWidgets.QLabel(self.centralwidget)
+        self.drug_timing_label.setGeometry(QtCore.QRect(0, 100, 531, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.drug_timing_label.setFont(font)
+        self.drug_timing_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.drug_timing_label.setObjectName("drug_timing_label")
+
+
+    def set_drug_timing(self, text):
+        self.drug_timing_label.setText(text)
+
 
     def retranslateUi(self, select_drug):
         _translate = QtCore.QCoreApplication.translate

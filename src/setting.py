@@ -315,7 +315,7 @@ class Ui_setting(object):
         setting.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(setting)
-        self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignor
+        self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignore
         self.ad_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
         self.bl2_checkBox.clicked['bool'].connect(self.bl_pushButton.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_pushButton.setEnabled) # type: ignore
@@ -330,11 +330,29 @@ class Ui_setting(object):
         self.ab_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_cr_label.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(setting)
+
+         # เพิ่มการเชื่อมต่อปุ่มกับฟังก์ชันเพื่อเปิดหน้าต่างที่ถูกต้อง
+        self.bb_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "เช้า"))
+        self.ab_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลัง", "เช้า"))
+        self.bl_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "เที่ยง"))
+        self.al_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลัง", "เที่ยง"))
+        self.bd_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "เย็น"))
+        self.ad_pushButton.clicked.connect(lambda: self.open_drug_timing_page("หลัง", "เย็น"))
+        self.bbed_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อน", "ก่อนนอน"))
         
         def close_window():
             setting.close()
             
         self.back_pushButton.clicked.connect(close_window)
+
+    def open_drug_timing_page(self, timing, meal):
+        from select_drug import Ui_select_drug
+        self.drug_timing_window = QtWidgets.QMainWindow()
+        self.drug_timing_ui = Ui_select_drug()
+        self.drug_timing_ui.setupUi(self.drug_timing_window)
+        self.drug_timing_ui.set_drug_timing(f"{meal} {timing} อาหาร")
+        
+        self.drug_timing_window.show()
 
     def retranslateUi(self, setting):
         _translate = QtCore.QCoreApplication.translate
