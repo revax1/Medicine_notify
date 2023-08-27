@@ -1,6 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtSql
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton
-import pymongo
+import sqlite3
 
 class Ui_Add_drug(object):
     def setupUi(self, Add_drug):
@@ -151,25 +151,31 @@ class Ui_Add_drug(object):
         
         # เชื่อมต่อกับฟังก์ชัน save_drug                                                                          เพิ่งเพิ่มล่าสุด
         self.pushButton.clicked.connect(self.save_drug)
-        
         # เชื่อมต่อกับฟังก์ชัน delete_drug
         self.delete_pushButton.clicked.connect(self.delete_drug)
+        
+        self.check_and_create_drug_table()
 
         # เรียกฟังก์ชันแสดงรายการยาที่มี
         self.load_drug_list()
+        
+    def check_and_create_drug_table(self):
+        connection = sqlite3.connect("medicine.db")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS Drug (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT)")
+        connection.commit()
+        connection.close()
 
     def save_drug(self):
-        # รับข้อมูลที่ผู้ใช้กรอกจาก UI
         drug_name = self.textEdit.toPlainText()
         drug_description = self.textEdit_2.toPlainText()
 
-        # เชื่อมต่อกับ MongoDB
-        client = pymongo.MongoClient()
-        db = client["Medicine-Notify"]
-        col = db["Drug"]
-
-        # เพิ่มข้อมูลลงในคอลเลกชัน
-        col.insert_one({"name": drug_name, "description": drug_description})
+        connection = sqlite3.connect("medicine.db")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS Drug (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT)")
+        cursor.execute("INSERT INTO Drug (name, description) VALUES (?, ?)", (drug_name, drug_description))
+        connection.commit()
+        connection.close()
 
         # สร้าง QDialog และกำหนดสไตล์
         message_dialog = QtWidgets.QDialog(self.centralwidget)
@@ -218,15 +224,12 @@ class Ui_Add_drug(object):
         # เรียกฟังก์ชันแสดงรายการยาที่มี                                                                            เพิ่งเพิ่มล่าสุด
         self.load_drug_list()
 
-    def delete_drug(self):                                                                                
-        # รับรายการที่เลือกจาก UI
+    def delete_drug(self): 
         selected_item = self.listWidget.currentItem()
 
         if selected_item:
-            # ดึงชื่อยาจากรายการที่เลือก
             drug_name = selected_item.text()
 
-            # สร้าง QDialog สำหรับการยืนยันการลบ
             confirm_dialog = QDialog(self.centralwidget)
             confirm_dialog.setWindowTitle("ยืนยันการลบ")
             confirm_dialog.setModal(True)
@@ -239,7 +242,6 @@ class Ui_Add_drug(object):
             font.setPointSize(22)
             confirm_label.setFont(font)
             confirm_label.setAlignment(QtCore.Qt.AlignCenter)
-            
 
             # สร้างปุ่ม OK และ Cancel
             ok_button = QPushButton("ใช่", confirm_dialog)
@@ -274,32 +276,25 @@ class Ui_Add_drug(object):
             result = confirm_dialog.exec_()
 
             if result == QDialog.Accepted:
-                # เชื่อมต่อกับ MongoDB
-                client = pymongo.MongoClient()
-                db = client["Medicine-Notify"]
-                col = db["Drug"]
+                connection = sqlite3.connect("medicine.db")
+                cursor = connection.cursor()
+                cursor.execute("DELETE FROM Drug WHERE name=?", (drug_name,))
+                connection.commit()
+                connection.close()
 
-                # ลบรายการยาออกจากคอลเลกชัน
-                col.delete_one({"name": drug_name})
-
-                # เรียกฟังก์ชันแสดงรายการยาที่มี
                 self.load_drug_list()
 
     def load_drug_list(self):
-        # เชื่อมต่อกับ MongoDB
-        client = pymongo.MongoClient()
-        db = client["Medicine-Notify"]
-        col = db["Drug"]
+        connection = sqlite3.connect("medicine.db")
+        cursor = connection.cursor()
+        cursor.execute("SELECT name FROM Drug")
+        drugs = cursor.fetchall()
+        connection.close()
 
-        # ดึงข้อมูลยาทั้งหมดจากคอลเลกชัน
-        drugs = col.find()
-
-        # ล้างรายการยาที่มีอยู่ใน UI
         self.listWidget.clear()
 
-        # แสดงข้อมูลยาในรายการ
         for drug in drugs:
-            drug_name = drug.get("name", "ไม่มีชื่อยา")
+            drug_name = drug[0]
             self.listWidget.addItem(drug_name)
 
 
@@ -319,6 +314,12 @@ import resources_rc
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+    db.setDatabaseName("medicine.db")
+    if not db.open():
+        print("Cannot establish a database connection.")
+        sys.exit(1)
+        
     Add_drug = QtWidgets.QMainWindow()
     ui = Ui_Add_drug()
     ui.setupUi(Add_drug)

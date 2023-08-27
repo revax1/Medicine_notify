@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import pymongo
+import sqlite3
 
 class Ui_setting(object):
     def setupUi(self, setting):
@@ -380,11 +380,21 @@ class Ui_setting(object):
         # ในส่วนนี้เราเพิ่มการเชื่อมต่อกับเมธอด save_checkbox_states ในปุ่มย้อนกลับ
         self.setting_back_pushButton.clicked.connect(self.save_checkbox_states_and_close)
         
-        # เพิ่มส่วนการเชื่อมต่อ MongoDB
-        self.mongo_client = pymongo.MongoClient()
-        self.db = self.mongo_client['Medicine-Notify']
-        self.collection = self.db['checkbox_states']
-        self.load_checkbox_states()  # ดึงค่าสถานะของ checkbox และกำหนดให้
+        # เพิ่มการเชื่อมต่อฐานข้อมูล SQLite3
+        self.conn = sqlite3.connect("medicine.db")
+        self.cursor = self.conn.cursor()
+        
+        # สร้างตาราง Drug_Meal ถ้ายังไม่มี
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Drug_Meal (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                meal TEXT,
+                checkbox_state INTEGER,
+                time TEXT
+            )
+        ''')
+        
+        self.load_checkbox_states()  # โหลดค่า checkbox_states จากฐานข้อมูล
         
         QtCore.QMetaObject.connectSlotsByName(setting)
         
@@ -394,42 +404,90 @@ class Ui_setting(object):
         self.setting.close()  # ปิดหน้าต่างรอบๆ ของ setting
         
     def load_checkbox_states(self):
-        checkbox_states = self.collection.find_one({"_id": "checkbox_states"})
-        if checkbox_states:
-            for checkbox_name, state in checkbox_states.items():
-                checkbox = getattr(self, checkbox_name, None)
-                if isinstance(checkbox, QtWidgets.QCheckBox):
-                    checkbox.setChecked(state)
-                    if checkbox_name == "bb_checkBox":
-                        self.bb_pushButton.setEnabled(state)
-                        self.bb_cr_label.setEnabled(state)
-                    if checkbox_name == "ab_checkBox":
-                        self.ab_pushButton.setEnabled(state)
-                        self.ab_cr_label.setEnabled(state)
-                    if checkbox_name == "bl_checkBox":
-                        self.bl_pushButton.setEnabled(state)
-                        self.bl_cr_label.setEnabled(state)
-                    if checkbox_name == "al_checkBox":
-                        self.al_pushButton.setEnabled(state)
-                        self.al_cr_label.setEnabled(state)
-                    if checkbox_name == "bd_checkBox":
-                        self.bd_pushButton.setEnabled(state)
-                        self.bd_cr_label.setEnabled(state)
-                    if checkbox_name == "ad_checkBox":
-                        self.ad_pushButton.setEnabled(state)
-                        self.ad_cr_label.setEnabled(state)
-                    if checkbox_name == "bbed_checkBox":
-                        self.ad_pushButton.setEnabled(state)
-                        self.ad_cr_label.setEnabled(state)
+        # โหลด checkbox_states จากฐานข้อมูล SQLite3
+        self.cursor.execute('SELECT meal, checkbox_state FROM Drug_Meal')
+        data = self.cursor.fetchall()
+
+        for meal, state in data:
+            if "มื้อเช้า ก่อนอาหาร" in meal:
+                self.bb_checkBox.setChecked(state)
+                self.bb_pushButton.setEnabled(bool(state))
+                self.bb_cr_label.setEnabled(bool(state))
+            elif "มื้อเช้า หลังอาหาร" in meal:
+                self.ab_checkBox.setChecked(state)
+                self.ab_pushButton.setEnabled(bool(state))
+                self.ab_cr_label.setEnabled(bool(state))
+            elif "มื้อเที่ยง ก่อนอาหาร" in meal:
+                self.bl_checkBox.setChecked(state)
+                self.bl_pushButton.setEnabled(bool(state))
+                self.bl_cr_label.setEnabled(bool(state))
+            elif "มื้อเที่ยง หลังอาหาร" in meal:
+                self.al_checkBox.setChecked(state)
+                self.al_pushButton.setEnabled(bool(state))
+                self.al_cr_label.setEnabled(bool(state))
+            elif "มื้อเย็น ก่อนอาหาร" in meal:
+                self.bd_checkBox.setChecked(state)
+                self.bd_pushButton.setEnabled(bool(state))
+                self.bd_cr_label.setEnabled(bool(state))
+            elif "มื้อเย็น หลังอาหาร" in meal:
+                self.ad_checkBox.setChecked(state)
+                self.ad_pushButton.setEnabled(bool(state))
+                self.ad_cr_label.setEnabled(bool(state))
+            elif "มื้อก่อนนอน" in meal:
+                self.bbed_checkBox.setChecked(state)
+                self.bbed_pushButton.setEnabled(bool(state))
+                self.bbed_cr_label.setEnabled(bool(state))
+
                     
     def save_checkbox_states(self):
-        checkbox_states = {}
-        for checkbox_name in dir(self):
-            checkbox = getattr(self, checkbox_name, None)
-            if isinstance(checkbox, QtWidgets.QCheckBox):
-                checkbox_states[checkbox_name] = checkbox.isChecked()
+        checkbox_states = {
+            "bb_checkBox": self.bb_checkBox.isChecked(),
+            "ab_checkBox": self.ab_checkBox.isChecked(),
+            "bl_checkBox": self.bl_checkBox.isChecked(),
+            "al_checkBox": self.al_checkBox.isChecked(),
+            "bd_checkBox": self.bd_checkBox.isChecked(),
+            "ad_checkBox": self.ad_checkBox.isChecked(),
+            "bbed_checkBox": self.bbed_checkBox.isChecked()
+        }
 
-        self.collection.update_one({"_id": "checkbox_states"}, {"$set": checkbox_states}, upsert=True)
+        # บันทึก checkbox_states ลงในฐานข้อมูล SQLite3
+        for checkbox_name, state in checkbox_states.items():
+            meal = ""
+            if "bb_checkBox" in checkbox_name:
+                meal = "มื้อเช้า ก่อนอาหาร"
+            elif "ab_checkBox" in checkbox_name:
+                meal = "มื้อเช้า หลังอาหาร"
+            elif "bl_checkBox" in checkbox_name:
+                meal = "มื้อเที่ยง ก่อนอาหาร"
+            elif "al_checkBox" in checkbox_name:
+                meal = "มื้อเที่ยง หลังอาหาร"
+            elif "bd_checkBox" in checkbox_name:
+                meal = "มื้อเย็น ก่อนอาหาร"
+            elif "ad_checkBox" in checkbox_name:
+                meal = "มื้อเย็น หลังอาหาร"
+            elif "bbed_checkBox" in checkbox_name:
+                meal = "มื้อก่อนนอน"
+
+            # ตรวจสอบว่ามีข้อมูลในฐานข้อมูลหรือไม่
+            self.cursor.execute('SELECT * FROM Drug_Meal WHERE meal = ?', (meal,))
+            existing_data = self.cursor.fetchone()
+
+            if existing_data:
+                # อัปเดตข้อมูล
+                self.cursor.execute('''
+                    UPDATE Drug_Meal
+                    SET checkbox_state = ?
+                    WHERE meal = ?
+                ''', (state, meal))
+            else:
+                # ถ้าไม่มีข้อมูล ให้เพิ่มข้อมูลใหม่
+                self.cursor.execute('''
+                    INSERT INTO Drug_Meal (meal, checkbox_state, time)
+                    VALUES (?, ?, ?)
+                ''', (meal, state, ""))
+
+        self.conn.commit()
+
 
     
     def open_drug_timing_page(self, timing, meal):
@@ -456,13 +514,6 @@ class Ui_setting(object):
         self.l_label.setText(_translate("setting", "มื้อเที่ยง"))
         self.d_label.setText(_translate("setting", "มื้อเย็น"))
         self.setting_back_pushButton.setText(_translate("setting", "ย้อนกลับ"))
-        self.bb_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
-        # self.ab_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
-        # self.bl_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
-        # self.al_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
-        # self.bd_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
-        # self.ad_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
-        # self.bbed_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
 import resources_rc
 
 
