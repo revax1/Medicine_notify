@@ -153,13 +153,6 @@ class Ui_select_drug(object):
             checkbox_item.setSizeHint(QtCore.QSize(200, 30))
             self.listWidget_2.addItem(checkbox_item)
             self.listWidget_2.setItemWidget(checkbox_item, checkbox)
-            
-            # drug_name = drug.get("name", "ไม่มีชื่อยา")
-            # checkbox_item = QtWidgets.QListWidgetItem()
-            # checkbox = QtWidgets.QCheckBox(drug_name)
-            # checkbox_item.setSizeHint(QtCore.QSize(200, 30))
-            # self.listWidget_2.addItem(checkbox_item)
-            # self.listWidget_2.setItemWidget(checkbox_item, checkbox)
     
     def get_selected_drugs(self):
         selected_drugs = []
@@ -202,7 +195,6 @@ class Ui_select_drug(object):
         self.add_drug_pushButton.setText(_translate("select_drug", "เพิ่มยา"))
         self.drugHave_label_3.setText(_translate("select_drug", "หากไม่มียาที่ต้องการ กดปุ่มด้านล่างนี้"))
 import resources_rc
-
 
 if __name__ == "__main__":
     import sys

@@ -1,8 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import pymongo
 
 class Ui_setting(object):
     def setupUi(self, setting):
+        self.setting = setting  # Store the setting object as an instance variable
         setting.setObjectName("setting")
         setting.resize(1124, 855)
         setting.setStyleSheet("background-color: rgb(217, 244, 255)")
@@ -81,7 +82,7 @@ class Ui_setting(object):
         self.ab_checkBox.setObjectName("ab_checkBox")
         
         self.bl_checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.bl_checkBox.setGeometry(QtCore.QRect(820, 330, 61, 71))
+        self.bl_checkBox.setGeometry(QtCore.QRect(440, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -111,7 +112,7 @@ class Ui_setting(object):
         self.al_checkBox.setObjectName("al_checkBox")
         
         self.bd_checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.bd_checkBox.setGeometry(QtCore.QRect(440, 330, 61, 71))
+        self.bd_checkBox.setGeometry(QtCore.QRect(820, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -170,8 +171,6 @@ class Ui_setting(object):
         self.bd_checkBox.setStyleSheet(checkbox_style)
         self.ad_checkBox.setStyleSheet(checkbox_style)
         self.bbed_checkBox.setStyleSheet(checkbox_style)
-        
-        
         
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setGeometry(QtCore.QRect(-30, 630, 1201, 20))
@@ -297,6 +296,7 @@ class Ui_setting(object):
         self.bb_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.bb_cr_label.setScaledContents(True)
         self.bb_cr_label.setObjectName("bb_cr_label")
+        
         self.ab_cr_label = QtWidgets.QLabel(self.centralwidget)
         self.ab_cr_label.setEnabled(False)
         self.ab_cr_label.setGeometry(QtCore.QRect(80, 440, 31, 31))
@@ -304,6 +304,7 @@ class Ui_setting(object):
         self.ab_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.ab_cr_label.setScaledContents(True)
         self.ab_cr_label.setObjectName("ab_cr_label")
+        
         self.bl_cr_label = QtWidgets.QLabel(self.centralwidget)
         self.bl_cr_label.setEnabled(False)
         self.bl_cr_label.setGeometry(QtCore.QRect(470, 290, 31, 31))
@@ -311,6 +312,7 @@ class Ui_setting(object):
         self.bl_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.bl_cr_label.setScaledContents(True)
         self.bl_cr_label.setObjectName("bl_cr_label")
+        
         self.al_cr_label = QtWidgets.QLabel(self.centralwidget)
         self.al_cr_label.setEnabled(False)
         self.al_cr_label.setGeometry(QtCore.QRect(470, 440, 31, 31))
@@ -318,6 +320,7 @@ class Ui_setting(object):
         self.al_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.al_cr_label.setScaledContents(True)
         self.al_cr_label.setObjectName("al_cr_label")
+        
         self.bd_cr_label = QtWidgets.QLabel(self.centralwidget)
         self.bd_cr_label.setEnabled(False)
         self.bd_cr_label.setGeometry(QtCore.QRect(850, 290, 31, 31))
@@ -325,6 +328,7 @@ class Ui_setting(object):
         self.bd_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.bd_cr_label.setScaledContents(True)
         self.bd_cr_label.setObjectName("bd_cr_label")
+        
         self.ad_cr_label = QtWidgets.QLabel(self.centralwidget)
         self.ad_cr_label.setEnabled(False)
         self.ad_cr_label.setGeometry(QtCore.QRect(850, 440, 31, 31))
@@ -332,6 +336,7 @@ class Ui_setting(object):
         self.ad_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.ad_cr_label.setScaledContents(True)
         self.ad_cr_label.setObjectName("ad_cr_label")
+        
         self.bbed_cr_label = QtWidgets.QLabel(self.centralwidget)
         self.bbed_cr_label.setEnabled(False)
         self.bbed_cr_label.setGeometry(QtCore.QRect(470, 660, 31, 31))
@@ -339,24 +344,27 @@ class Ui_setting(object):
         self.bbed_cr_label.setPixmap(QtGui.QPixmap(":/icons/Flat_tick_icon.svg.png"))
         self.bbed_cr_label.setScaledContents(True)
         self.bbed_cr_label.setObjectName("bbed_cr_label")
+        
         setting.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(setting)
         self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignore
         self.ab_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
-        self.bd_checkBox.clicked['bool'].connect(self.bl_pushButton.setEnabled) # type: ignore
+        self.bl_checkBox.clicked['bool'].connect(self.bl_pushButton.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_pushButton.setEnabled) # type: ignore
-        self.bl_checkBox.clicked['bool'].connect(self.bd_pushButton.setEnabled) # type: ignore
+        self.bd_checkBox.clicked['bool'].connect(self.bd_pushButton.setEnabled) # type: ignore
         self.ad_checkBox.clicked['bool'].connect(self.ad_pushButton.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_pushButton.setEnabled) # type: ignore
         self.bb_checkBox.clicked['bool'].connect(self.bb_cr_label.setEnabled) # type: ignore
-        self.bd_checkBox.clicked['bool'].connect(self.bl_cr_label.setEnabled) # type: ignore
-        self.bl_checkBox.clicked['bool'].connect(self.bd_cr_label.setEnabled) # type: ignore
+        self.bl_checkBox.clicked['bool'].connect(self.bl_cr_label.setEnabled) # type: ignore
+        self.bd_checkBox.clicked['bool'].connect(self.bd_cr_label.setEnabled) # type: ignore
         self.ab_checkBox.clicked['bool'].connect(self.ab_cr_label.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_cr_label.setEnabled) # type: ignore
         self.ad_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_cr_label.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(setting)
+
+    
         
          # เพิ่มการเชื่อมต่อปุ่มกับฟังก์ชันเพื่อเปิดหน้าต่างที่ถูกต้อง
         self.bb_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อนอาหาร", "มื้อเช้า"))
@@ -368,12 +376,62 @@ class Ui_setting(object):
         self.bbed_pushButton.clicked.connect(lambda: self.open_drug_timing_page("", "มื้อก่อนนอน"))
         
         setting.showFullScreen()
-    
-        def close_window():
-            setting.close()
-            
-        self.setting_back_pushButton.clicked.connect(close_window)
         
+        # ในส่วนนี้เราเพิ่มการเชื่อมต่อกับเมธอด save_checkbox_states ในปุ่มย้อนกลับ
+        self.setting_back_pushButton.clicked.connect(self.save_checkbox_states_and_close)
+        
+        # เพิ่มส่วนการเชื่อมต่อ MongoDB
+        self.mongo_client = pymongo.MongoClient()
+        self.db = self.mongo_client['Medicine-Notify']
+        self.collection = self.db['checkbox_states']
+        self.load_checkbox_states()  # ดึงค่าสถานะของ checkbox และกำหนดให้
+        
+        QtCore.QMetaObject.connectSlotsByName(setting)
+        
+    
+    def save_checkbox_states_and_close(self):
+        self.save_checkbox_states()
+        self.setting.close()  # ปิดหน้าต่างรอบๆ ของ setting
+        
+    def load_checkbox_states(self):
+        checkbox_states = self.collection.find_one({"_id": "checkbox_states"})
+        if checkbox_states:
+            for checkbox_name, state in checkbox_states.items():
+                checkbox = getattr(self, checkbox_name, None)
+                if isinstance(checkbox, QtWidgets.QCheckBox):
+                    checkbox.setChecked(state)
+                    if checkbox_name == "bb_checkBox":
+                        self.bb_pushButton.setEnabled(state)
+                        self.bb_cr_label.setEnabled(state)
+                    if checkbox_name == "ab_checkBox":
+                        self.ab_pushButton.setEnabled(state)
+                        self.ab_cr_label.setEnabled(state)
+                    if checkbox_name == "bl_checkBox":
+                        self.bl_pushButton.setEnabled(state)
+                        self.bl_cr_label.setEnabled(state)
+                    if checkbox_name == "al_checkBox":
+                        self.al_pushButton.setEnabled(state)
+                        self.al_cr_label.setEnabled(state)
+                    if checkbox_name == "bd_checkBox":
+                        self.bd_pushButton.setEnabled(state)
+                        self.bd_cr_label.setEnabled(state)
+                    if checkbox_name == "ad_checkBox":
+                        self.ad_pushButton.setEnabled(state)
+                        self.ad_cr_label.setEnabled(state)
+                    if checkbox_name == "bbed_checkBox":
+                        self.ad_pushButton.setEnabled(state)
+                        self.ad_cr_label.setEnabled(state)
+                    
+    def save_checkbox_states(self):
+        checkbox_states = {}
+        for checkbox_name in dir(self):
+            checkbox = getattr(self, checkbox_name, None)
+            if isinstance(checkbox, QtWidgets.QCheckBox):
+                checkbox_states[checkbox_name] = checkbox.isChecked()
+
+        self.collection.update_one({"_id": "checkbox_states"}, {"$set": checkbox_states}, upsert=True)
+
+    
     def open_drug_timing_page(self, timing, meal):
         from select_drug import Ui_select_drug
         self.drug_timing_window = QtWidgets.QMainWindow()
@@ -398,6 +456,13 @@ class Ui_setting(object):
         self.l_label.setText(_translate("setting", "มื้อเที่ยง"))
         self.d_label.setText(_translate("setting", "มื้อเย็น"))
         self.setting_back_pushButton.setText(_translate("setting", "ย้อนกลับ"))
+        self.bb_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
+        # self.ab_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
+        # self.bl_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
+        # self.al_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
+        # self.bd_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
+        # self.ad_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
+        # self.bbed_cr_label.setEnabled(False)  # เพิ่มบรรทัดนี้
 import resources_rc
 
 
@@ -407,5 +472,6 @@ if __name__ == "__main__":
     setting = QtWidgets.QMainWindow()
     ui = Ui_setting()
     ui.setupUi(setting)
+    
     setting.show()
     sys.exit(app.exec_())
