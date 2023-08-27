@@ -1,5 +1,28 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDialog, QTimeEdit, QPushButton, QVBoxLayout
 import pymongo
+
+class TimePickerDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("เลือกเวลาจ่ายยา")
+
+        self.time_edit = QTimeEdit()
+        self.time_edit.setDisplayFormat("HH:mm")
+        self.time_edit.setTime(QtCore.QTime.currentTime())
+
+        self.confirm_button = QPushButton("ตกลง")
+        self.confirm_button.clicked.connect(self.accept)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.time_edit)
+        layout.addWidget(self.confirm_button)
+        self.setLayout(layout)
+
+    def selected_time(self):
+        return self.time_edit.time()
+
 class Ui_select_drug(object):
     def setupUi(self, select_drug):
         select_drug.setObjectName("select_drug")
@@ -13,21 +36,21 @@ class Ui_select_drug(object):
         self.line.setLineWidth(3)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setObjectName("line")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(140, 30, 281, 71))
+        self.drug_timing_label = QtWidgets.QLabel(self.centralwidget)
+        self.drug_timing_label.setGeometry(QtCore.QRect(140, 30, 281, 71))
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
         font.setWeight(75)
-        self.label.setFont(font)
-        self.label.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.label.setFrameShape(QtWidgets.QFrame.Box)
-        self.label.setLineWidth(1)
-        self.label.setTextFormat(QtCore.Qt.AutoText)
-        self.label.setScaledContents(False)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setWordWrap(True)
-        self.label.setObjectName("label")
+        self.drug_timing_label.setFont(font)
+        self.drug_timing_label.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.drug_timing_label.setFrameShape(QtWidgets.QFrame.Box)
+        self.drug_timing_label.setLineWidth(1)
+        self.drug_timing_label.setTextFormat(QtCore.Qt.AutoText)
+        self.drug_timing_label.setScaledContents(False)
+        self.drug_timing_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.drug_timing_label.setWordWrap(True)
+        self.drug_timing_label.setObjectName("drug_timing_label")
         self.add_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.add_back_pushButton.setGeometry(QtCore.QRect(10, 40, 91, 41))
         font = QtGui.QFont()
@@ -119,33 +142,34 @@ class Ui_select_drug(object):
 
         self.retranslateUi(select_drug)
         QtCore.QMetaObject.connectSlotsByName(select_drug)
-
-        self.pushButton_3.clicked.connect(self.open_add_drug_page)
-
-
-        self.drug_timing_label = QtWidgets.QLabel(self.centralwidget)
-        self.drug_timing_label.setGeometry(QtCore.QRect(0, 100, 531, 31))
+        
+        # Add the "Set Time" button
+        self.set_time_button = QtWidgets.QPushButton(self.centralwidget)
+        self.set_time_button.setGeometry(QtCore.QRect(460, 50, 61, 41))
         font = QtGui.QFont()
-        font.setPointSize(12)
-        self.drug_timing_label.setFont(font)
-        self.drug_timing_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.drug_timing_label.setObjectName("drug_timing_label")
+        font.setPointSize(10)
+        self.set_time_button.setFont(font)
+        self.set_time_button.setStyleSheet("background-color: rgb(81, 179, 85);")
+        self.set_time_button.setObjectName("set_time_button")
+        self.set_time_button.setText("เวลาจ่ายยา")
 
 
+        # กดปุ่มเพิ่มยา
         self.pushButton_3.clicked.connect(self.open_add_drug_page)
-        self.pushButton_2.clicked.connect(self.delete_selected_drugs)
+        
+        # ปุ่มย้อนกลับ
+        def close_window():
+            select_drug.close()
+        self.add_back_pushButton.clicked.connect(close_window)
+        self.pushButton_2.clicked.connect(self.add_selected_drug)
+        
+        #self.load_all_drugs()  # โหลดยาทั้งหมดจาก checkbox
+        
+        # Connect the "เวลาจ่ายยา" button to the open_time_picker method
+        self.set_time_button.clicked.connect(self.open_time_picker)
 
-       
         self.load_all_drugs()  # Load all drugs with checkboxes
 
-        # Connect the delete button to the delete_selected_drugs method
-        self.pushButton_2.clicked.connect(self.delete_selected_drugs)
-
-        # Connect the "Add Drug" button to the open_add_drug_page method
-        self.pushButton_3.clicked.connect(self.open_add_drug_page)
-
-        # Load drug names from the database into the 'เลือกรายการยาที่ต้องการ' list
-        self.load_drug_list()
 
 
     def load_all_drugs(self):
@@ -164,11 +188,10 @@ class Ui_select_drug(object):
         for drug in drugs:
             drug_name = drug.get("name", "ไม่มีชื่อยา")
             checkbox_item = QtWidgets.QListWidgetItem(drug_name)
-            checkbox = QtWidgets.QCheckBox()
+            checkbox = QtWidgets.QCheckBox(drug_name)
             checkbox_item.setSizeHint(QtCore.QSize(200, 30))
             self.listWidget_2.addItem(checkbox_item)
             self.listWidget_2.setItemWidget(checkbox_item, checkbox)
-
     
     def get_selected_drugs(self):
         selected_drugs = []
@@ -178,9 +201,8 @@ class Ui_select_drug(object):
             if checkbox.isChecked():
                 selected_drugs.append(checkbox_item.text())
         return selected_drugs
-    
-
-    def delete_selected_drugs(self):
+        
+    def add_selected_drug(self):
         # Clear the 'รายการยาของมื้อนี้' list
         self.listWidget.clear()
 
@@ -190,7 +212,15 @@ class Ui_select_drug(object):
         # Add the selected drugs to the 'รายการยาของมื้อนี้' list
         for drug in selected_drugs:
             self.listWidget.addItem(drug)
+        
+    def open_add_drug_page(self):
+        from addDrug import Ui_Add_drug  # ชื่อไฟล์ของ UI ของหน้า 'เพิ่มยา'
+        self.add_drug_window = QtWidgets.QMainWindow()
+        self.add_drug_ui = Ui_Add_drug()
+        self.add_drug_ui.setupUi(self.add_drug_window)
 
+        self.add_drug_window.show()
+        
     def set_drug_timing(self, text):
         self.drug_timing_label.setText(text)
 
@@ -198,51 +228,22 @@ class Ui_select_drug(object):
     def retranslateUi(self, select_drug):
         _translate = QtCore.QCoreApplication.translate
         select_drug.setWindowTitle(_translate("select_drug", "เลือกมื้อยา"))
-        self.label.setText(_translate("select_drug", "      มื้อเช้า ก่อนอาหาร"))
         self.add_back_pushButton.setText(_translate("select_drug", "ย้อนกลับ"))
-        self.pushButton_2.setText(_translate("select_drug", "ลบรายการ"))
+        self.pushButton_2.setText(_translate("select_drug", "ยืนยัน"))
         self.drugHave_label.setText(_translate("select_drug", "รายการยาของมื้อนี้"))
         self.drugHave_label_2.setText(_translate("select_drug", "เลือกรายการยาที่ต้องการ"))
         self.pushButton_3.setText(_translate("select_drug", "เพิ่มยา"))
         self.drugHave_label_3.setText(_translate("select_drug", "หากไม่มียาที่ต้องการ กดปุ่มด้านล่างนี้"))
 
-    def load_drug_list(self):
-        # Connect to MongoDB
-        client = pymongo.MongoClient()
-        db = client["Medicine-Notify"]
-        col = db["Drug"]
 
-        # Retrieve all drugs from the collection
-        drugs = col.find()
+    def open_time_picker(self):
+        # Create a time picker dialog
+        time_dialog = TimePickerDialog()
 
-        # Clear the list before adding new items
-        self.listWidget_2.clear()
-
-        # Display drug data in the list with checkboxes
-        for drug in drugs:
-            drug_name = drug.get("name", "ไม่มีชื่อยา")
-            checkbox_item = QtWidgets.QListWidgetItem(drug_name)
-            checkbox = QtWidgets.QCheckBox()
-            checkbox_item.setSizeHint(QtCore.QSize(200, 30))
-            self.listWidget_2.addItem(checkbox_item)
-            self.listWidget_2.setItemWidget(checkbox_item, checkbox)
-
-    def open_add_drug_page(self):
-        from addDrug import Ui_Add_drug  # ชื่อไฟล์ของ UI ของหน้า 'เพิ่มยา'
-        self.add_drug_window = QtWidgets.QMainWindow()
-        self.add_drug_ui = Ui_Add_drug()
-        self.add_drug_ui.setupUi(self.add_drug_window)
-
-        # # เมื่อหน้าต่าง 'เพิ่มยา' ปิด จะเรียกฟังก์ชัน update_drug_list ในหน้า 'เลือกมื้อยา'
-        # self.add_drug_ui.add_drug_window.closeEvent = self.update_drug_list
-
-        self.add_drug_window.show()
-
-    # def update_drug_list(self, event):
-    #     self.load_drug_list()
-    #     event.accept()
-
-
+        # Show the dialog and get the selected time
+        if time_dialog.exec_():
+            selected_time = time_dialog.selected_time()
+            print("Selected time:", selected_time.toString())
 
 
 import resources_rc
