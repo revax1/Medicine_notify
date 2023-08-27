@@ -143,7 +143,9 @@ class Ui_select_drug(object):
         self.retranslateUi(select_drug)
         QtCore.QMetaObject.connectSlotsByName(select_drug)
         
-        # Add the "Set Time" button
+
+
+        # Add the "เวลาจ่ายยา" button
         self.set_time_button = QtWidgets.QPushButton(self.centralwidget)
         self.set_time_button.setGeometry(QtCore.QRect(460, 50, 61, 41))
         font = QtGui.QFont()
@@ -152,6 +154,15 @@ class Ui_select_drug(object):
         self.set_time_button.setStyleSheet("background-color: rgb(81, 179, 85);")
         self.set_time_button.setObjectName("set_time_button")
         self.set_time_button.setText("เวลาจ่ายยา")
+
+        # Add QLabel to display selected time
+        self.time_label = QtWidgets.QLabel(self.centralwidget)
+        self.time_label.setGeometry(QtCore.QRect(340, 100, 181, 21))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.time_label.setFont(font)
+        self.time_label.setObjectName("time_label")
+        self.time_label.setAlignment(QtCore.Qt.AlignCenter)
 
 
         # กดปุ่มเพิ่มยา
@@ -244,6 +255,10 @@ class Ui_select_drug(object):
         if time_dialog.exec_():
             selected_time = time_dialog.selected_time()
             print("Selected time:", selected_time.toString())
+
+            # Display the selected time above the "เวลาจ่ายยา" button
+            self.time_label.setText("เวลาที่เลือก: " + selected_time.toString("hh:mm") + " น.")
+
 
 
 import resources_rc
