@@ -8,6 +8,7 @@ class Ui_setting(object):
         setting.setStyleSheet("background-color: rgb(217, 244, 255)")
         self.centralwidget = QtWidgets.QWidget(setting)
         self.centralwidget.setObjectName("centralwidget")
+        
         self.setting_label = QtWidgets.QLabel(self.centralwidget)
         self.setting_label.setGeometry(QtCore.QRect(360, 50, 431, 71))
         font = QtGui.QFont()
@@ -23,6 +24,7 @@ class Ui_setting(object):
         self.setting_label.setAlignment(QtCore.Qt.AlignCenter)
         self.setting_label.setWordWrap(True)
         self.setting_label.setObjectName("setting_label")
+        
         self.setting_icon_label = QtWidgets.QLabel(self.centralwidget)
         self.setting_icon_label.setGeometry(QtCore.QRect(390, 70, 41, 41))
         font = QtGui.QFont()
@@ -40,6 +42,7 @@ class Ui_setting(object):
         self.setting_icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.setting_icon_label.setWordWrap(True)
         self.setting_icon_label.setObjectName("setting_icon_label")
+        
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setGeometry(QtCore.QRect(-20, 180, 1201, 16))
         self.line.setFrameShadow(QtWidgets.QFrame.Plain)
@@ -58,13 +61,12 @@ class Ui_setting(object):
         self.bb_checkBox.setFont(font)
         self.bb_checkBox.setFocusPolicy(QtCore.Qt.WheelFocus)
         self.bb_checkBox.setText("")
-        
         self.bb_checkBox.setStyleSheet("")
-        
         self.bb_checkBox.setTristate(False)
         self.bb_checkBox.setObjectName("bb_checkBox")
+        
         self.ab_checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.ab_checkBox.setGeometry(QtCore.QRect(820, 480, 61, 71))
+        self.ab_checkBox.setGeometry(QtCore.QRect(60, 480, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -77,6 +79,7 @@ class Ui_setting(object):
         self.ab_checkBox.setText("")
         self.ab_checkBox.setTristate(False)
         self.ab_checkBox.setObjectName("ab_checkBox")
+        
         self.bl_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bl_checkBox.setGeometry(QtCore.QRect(820, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -91,6 +94,7 @@ class Ui_setting(object):
         self.bl_checkBox.setText("")
         self.bl_checkBox.setTristate(False)
         self.bl_checkBox.setObjectName("bl_checkBox")
+        
         self.al_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.al_checkBox.setGeometry(QtCore.QRect(440, 480, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -105,6 +109,7 @@ class Ui_setting(object):
         self.al_checkBox.setText("")
         self.al_checkBox.setTristate(False)
         self.al_checkBox.setObjectName("al_checkBox")
+        
         self.bd_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bd_checkBox.setGeometry(QtCore.QRect(440, 330, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -119,8 +124,9 @@ class Ui_setting(object):
         self.bd_checkBox.setText("")
         self.bd_checkBox.setTristate(False)
         self.bd_checkBox.setObjectName("bd_checkBox")
+        
         self.ad_checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.ad_checkBox.setGeometry(QtCore.QRect(60, 480, 61, 71))
+        self.ad_checkBox.setGeometry(QtCore.QRect(820, 480, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -133,6 +139,7 @@ class Ui_setting(object):
         self.ad_checkBox.setText("")
         self.ad_checkBox.setTristate(False)
         self.ad_checkBox.setObjectName("ad_checkBox")
+        
         self.bbed_checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.bbed_checkBox.setGeometry(QtCore.QRect(440, 700, 61, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -323,18 +330,18 @@ class Ui_setting(object):
 
         self.retranslateUi(setting)
         self.bb_checkBox.clicked['bool'].connect(self.bb_pushButton.setEnabled) # type: ignore
-        self.ad_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
+        self.ab_checkBox.clicked['bool'].connect(self.ab_pushButton.setEnabled) # type: ignore
         self.bd_checkBox.clicked['bool'].connect(self.bl_pushButton.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_pushButton.setEnabled) # type: ignore
         self.bl_checkBox.clicked['bool'].connect(self.bd_pushButton.setEnabled) # type: ignore
-        self.ab_checkBox.clicked['bool'].connect(self.ad_pushButton.setEnabled) # type: ignore
+        self.ad_checkBox.clicked['bool'].connect(self.ad_pushButton.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_pushButton.setEnabled) # type: ignore
         self.bb_checkBox.clicked['bool'].connect(self.bb_cr_label.setEnabled) # type: ignore
         self.bd_checkBox.clicked['bool'].connect(self.bl_cr_label.setEnabled) # type: ignore
         self.bl_checkBox.clicked['bool'].connect(self.bd_cr_label.setEnabled) # type: ignore
-        self.ad_checkBox.clicked['bool'].connect(self.ab_cr_label.setEnabled) # type: ignore
+        self.ab_checkBox.clicked['bool'].connect(self.ab_cr_label.setEnabled) # type: ignore
         self.al_checkBox.clicked['bool'].connect(self.al_cr_label.setEnabled) # type: ignore
-        self.ab_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
+        self.ad_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_cr_label.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(setting)
         
