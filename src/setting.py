@@ -363,8 +363,6 @@ class Ui_setting(object):
         self.ad_checkBox.clicked['bool'].connect(self.ad_cr_label.setEnabled) # type: ignore
         self.bbed_checkBox.clicked['bool'].connect(self.bbed_cr_label.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(setting)
-
-    
         
          # เพิ่มการเชื่อมต่อปุ่มกับฟังก์ชันเพื่อเปิดหน้าต่างที่ถูกต้อง
         self.bb_pushButton.clicked.connect(lambda: self.open_drug_timing_page("ก่อนอาหาร", "มื้อเช้า"))
@@ -386,13 +384,46 @@ class Ui_setting(object):
         
         # สร้างตาราง Drug_Meal ถ้ายังไม่มี
         self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Drug_Meal (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                meal TEXT,
-                checkbox_state INTEGER,
-                time TEXT
+            CREATE TABLE IF NOT EXISTS Meal (
+                meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                meal_name TEXT
             )
         ''')
+        
+        # สร้างตาราง Drug_Meal ถ้ายังไม่มี
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Drug_Meal (
+                drug_meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                meal_id INTEGER,
+                checkbox_state INTEGER,
+                time TEXT,
+                drug_id INTEGER,
+                FOREIGN KEY (meal_id) REFERENCES Meal(meal_id),
+                FOREIGN KEY (drug_id) REFERENCES Drug(drug_id)
+            )
+        ''')
+        
+        # เช็คว่ามีข้อมูลในตาราง Meal หรือยัง
+        self.cursor.execute('SELECT COUNT(*) FROM Meal')
+        count = self.cursor.fetchone()[0]
+
+        if count == 0:
+            # สร้างรายชื่อของมื้อ
+            meal_names = [
+                "มื้อเช้า ก่อนอาหาร",
+                "มื้อเช้า หลังอาหาร",
+                "มื้อเที่ยง ก่อนอาหาร",
+                "มื้อเที่ยง หลังอาหาร",
+                "มื้อเย็น ก่อนอาหาร",
+                "มื้อเย็น หลังอาหาร",
+                "มื้อก่อนนอน"
+            ]
+
+            # เพิ่มรายชื่อมื้อลงในตาราง Meal
+            for meal_name in meal_names:
+                self.cursor.execute('INSERT INTO Meal (meal_name) VALUES (?)', (meal_name,))
+
+            self.conn.commit()
         
         self.load_checkbox_states()  # โหลดค่า checkbox_states จากฐานข้อมูล
         
@@ -405,40 +436,39 @@ class Ui_setting(object):
         
     def load_checkbox_states(self):
         # โหลด checkbox_states จากฐานข้อมูล SQLite3
-        self.cursor.execute('SELECT meal, checkbox_state FROM Drug_Meal')
+        self.cursor.execute('SELECT meal_id, checkbox_state FROM Drug_Meal')
         data = self.cursor.fetchall()
 
-        for meal, state in data:
-            if "มื้อเช้า ก่อนอาหาร" in meal:
+        for meal_id, state in data:
+            if meal_id == 1:
                 self.bb_checkBox.setChecked(state)
                 self.bb_pushButton.setEnabled(bool(state))
                 self.bb_cr_label.setEnabled(bool(state))
-            elif "มื้อเช้า หลังอาหาร" in meal:
+            elif meal_id == 2:
                 self.ab_checkBox.setChecked(state)
                 self.ab_pushButton.setEnabled(bool(state))
                 self.ab_cr_label.setEnabled(bool(state))
-            elif "มื้อเที่ยง ก่อนอาหาร" in meal:
+            elif meal_id == 3:
                 self.bl_checkBox.setChecked(state)
                 self.bl_pushButton.setEnabled(bool(state))
                 self.bl_cr_label.setEnabled(bool(state))
-            elif "มื้อเที่ยง หลังอาหาร" in meal:
+            elif meal_id == 4:
                 self.al_checkBox.setChecked(state)
                 self.al_pushButton.setEnabled(bool(state))
                 self.al_cr_label.setEnabled(bool(state))
-            elif "มื้อเย็น ก่อนอาหาร" in meal:
+            elif meal_id == 5:
                 self.bd_checkBox.setChecked(state)
                 self.bd_pushButton.setEnabled(bool(state))
                 self.bd_cr_label.setEnabled(bool(state))
-            elif "มื้อเย็น หลังอาหาร" in meal:
+            elif meal_id == 6:
                 self.ad_checkBox.setChecked(state)
                 self.ad_pushButton.setEnabled(bool(state))
                 self.ad_cr_label.setEnabled(bool(state))
-            elif "มื้อก่อนนอน" in meal:
+            elif meal_id == 7:
                 self.bbed_checkBox.setChecked(state)
                 self.bbed_pushButton.setEnabled(bool(state))
                 self.bbed_cr_label.setEnabled(bool(state))
 
-                    
     def save_checkbox_states(self):
         checkbox_states = {
             "bb_checkBox": self.bb_checkBox.isChecked(),
@@ -452,24 +482,24 @@ class Ui_setting(object):
 
         # บันทึก checkbox_states ลงในฐานข้อมูล SQLite3
         for checkbox_name, state in checkbox_states.items():
-            meal = ""
+            meal_id = None
             if "bb_checkBox" in checkbox_name:
-                meal = "มื้อเช้า ก่อนอาหาร"
+                meal_id = 1
             elif "ab_checkBox" in checkbox_name:
-                meal = "มื้อเช้า หลังอาหาร"
+                meal_id = 2
             elif "bl_checkBox" in checkbox_name:
-                meal = "มื้อเที่ยง ก่อนอาหาร"
+                meal_id = 3
             elif "al_checkBox" in checkbox_name:
-                meal = "มื้อเที่ยง หลังอาหาร"
+                meal_id = 4
             elif "bd_checkBox" in checkbox_name:
-                meal = "มื้อเย็น ก่อนอาหาร"
+                meal_id = 5
             elif "ad_checkBox" in checkbox_name:
-                meal = "มื้อเย็น หลังอาหาร"
+                meal_id = 6
             elif "bbed_checkBox" in checkbox_name:
-                meal = "มื้อก่อนนอน"
+                meal_id = 7
 
             # ตรวจสอบว่ามีข้อมูลในฐานข้อมูลหรือไม่
-            self.cursor.execute('SELECT * FROM Drug_Meal WHERE meal = ?', (meal,))
+            self.cursor.execute('SELECT * FROM Drug_Meal WHERE meal_id = ?', (meal_id,))
             existing_data = self.cursor.fetchone()
 
             if existing_data:
@@ -477,19 +507,17 @@ class Ui_setting(object):
                 self.cursor.execute('''
                     UPDATE Drug_Meal
                     SET checkbox_state = ?
-                    WHERE meal = ?
-                ''', (state, meal))
+                    WHERE meal_id = ?
+                ''', (state, meal_id))
             else:
                 # ถ้าไม่มีข้อมูล ให้เพิ่มข้อมูลใหม่
                 self.cursor.execute('''
-                    INSERT INTO Drug_Meal (meal, checkbox_state, time)
+                    INSERT INTO Drug_Meal (meal_id, checkbox_state, time)
                     VALUES (?, ?, ?)
-                ''', (meal, state, ""))
+                ''', (meal_id, state, ""))
 
         self.conn.commit()
 
-
-    
     def open_drug_timing_page(self, timing, meal):
         from select_drug import Ui_select_drug
         self.drug_timing_window = QtWidgets.QMainWindow()
