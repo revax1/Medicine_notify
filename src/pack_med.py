@@ -255,8 +255,6 @@ class Ui_med_pack2(object):
         self.ui_med_pack.closeMedPack()  # เรียกใช้เมธอด closeMedPack ของ Ui_med_pack
         self.med_pack2.close()  # ปิดหน้าต่างที่เป็นส่วนสมาชิกของ Ui_med_pack2
 
-
-
     def retranslateUi(self, med_pack2):
         _translate = QtCore.QCoreApplication.translate
         med_pack2.setWindowTitle(_translate("med_pack2", "วิธีการใส่ยา"))

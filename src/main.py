@@ -2,14 +2,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from addDrug import Ui_Add_drug
 from setting import Ui_setting
 from pack_med import Ui_med_pack
+
 import datetime
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, QLocale
 
 class Ui_Medicine_App(object):
     def setupUi(self, Medicine_App):
         Medicine_App.setObjectName("Medicine_App")
         Medicine_App.setEnabled(True)
-        Medicine_App.resize(1124, 855)
+        Medicine_App.resize(531, 401)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/home_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Medicine_App.setWindowIcon(icon)
@@ -227,15 +228,6 @@ class Ui_Medicine_App(object):
             
         self.ui_pack.pack_back_pushButton.clicked.connect(close_pack_window)
         
-    def animate_button(self):
-        sender_button = self.sender()  # ดึงปุ่มที่กดจาก sender()
-        animation = QtCore.QPropertyAnimation(sender_button, b"geometry")
-        animation.setDuration(100)  # ระยะเวลาในการทำแอนิเมชั่น (มีหน่วยเป็นมิลลิวินาที)
-        animation.setStartValue(sender_button.geometry())
-        animation.setEndValue(sender_button.geometry().translated(0, 10))  # แกน y เพิ่มขึ้น 10 พิกเซล
-        animation.setEasingCurve(QtCore.QEasingCurve.OutBounce)  # การเลือกวิธีทำให้แอนิเมชั่นดูเรียบร้อยขึ้น
-        animation.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-
     def retranslateUi(self, Medicine_App):
         _translate = QtCore.QCoreApplication.translate
         Medicine_App.setWindowTitle(_translate("Medicine_App", "หน้าแรก"))
@@ -248,7 +240,6 @@ class Ui_Medicine_App(object):
         
 import resources_rc
 
-
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -256,5 +247,8 @@ if __name__ == "__main__":
     ui = Ui_Medicine_App()
     ui.setupUi(Medicine_App)
     Medicine_App.showFullScreen()
+    # Set the locale to English
+    english_locale = QLocale(QLocale.English)
+    QLocale.setDefault(english_locale)
     Medicine_App.show()
     sys.exit(app.exec_())

@@ -382,7 +382,7 @@ class Ui_setting(object):
         self.conn = sqlite3.connect("medicine.db")
         self.cursor = self.conn.cursor()
         
-        # สร้างตาราง Drug_Meal ถ้ายังไม่มี
+        # สร้างตาราง Meal ถ้ายังไม่มี
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS Meal (
                 meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -396,10 +396,10 @@ class Ui_setting(object):
                 drug_meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 meal_id INTEGER,
                 checkbox_state INTEGER,
-                time TEXT,
+                time_selected TEXT,  -- เพิ่มคอลัมน์เก็บเวลาที่ผู้ใช้เลือก
                 drug_id INTEGER,
                 FOREIGN KEY (meal_id) REFERENCES Meal(meal_id),
-                FOREIGN KEY (drug_id) REFERENCES Drug(drug_id)
+                FOREIGN KEY (drug_id) REFERENCES Drug(id)
             )
         ''')
         
@@ -512,7 +512,7 @@ class Ui_setting(object):
             else:
                 # ถ้าไม่มีข้อมูล ให้เพิ่มข้อมูลใหม่
                 self.cursor.execute('''
-                    INSERT INTO Drug_Meal (meal_id, checkbox_state, time)
+                    INSERT INTO Drug_Meal (meal_id, checkbox_state, time_selected)
                     VALUES (?, ?, ?)
                 ''', (meal_id, state, ""))
 
@@ -524,6 +524,8 @@ class Ui_setting(object):
         self.drug_timing_ui = Ui_select_drug()
         self.drug_timing_ui.setupUi(self.drug_timing_window)
         self.drug_timing_ui.set_drug_timing(f"{meal} {timing}")
+        
+        
         
         self.drug_timing_window.show()
 

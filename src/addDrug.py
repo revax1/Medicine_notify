@@ -169,6 +169,45 @@ class Ui_Add_drug(object):
     def save_drug(self):
         drug_name = self.textEdit.toPlainText()
         drug_description = self.textEdit_2.toPlainText()
+        
+        if not drug_name.strip():
+            error_dialog = QtWidgets.QDialog(self.centralwidget)
+            error_dialog.setWindowTitle("ผิดพลาด")
+            error_dialog.setModal(True)
+            error_dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+
+            # Create and configure QLabel for the error message
+            error_label = QtWidgets.QLabel("กรุณาระบุชื่อยา", error_dialog)
+            font = QtGui.QFont()
+            font.setPointSize(18)
+            error_label.setFont(font)
+            error_label.setAlignment(QtCore.Qt.AlignCenter)
+
+            # Create and configure OK button
+            ok_button = QtWidgets.QPushButton("ตกลง", error_dialog)
+            ok_button_font = QtGui.QFont()
+            ok_button_font.setPointSize(22)
+            ok_button.setFont(ok_button_font)
+
+            # Set background color for the dialog
+            error_dialog.setStyleSheet("background-color: rgb(255, 241, 129); border-radius: 30px;")
+
+            # Set button background and text color
+            ok_button.setStyleSheet("background-color: rgb(85, 170, 127); color: white; border: none; border-radius: 15px;")
+
+            # Set QDialog layout
+            layout = QtWidgets.QVBoxLayout()
+            layout.addWidget(error_label)
+            layout.addWidget(ok_button)
+            layout.setContentsMargins(40, 30, 40, 30)  # Add margins to the layout (left, top, right, bottom)
+            error_dialog.setLayout(layout)
+
+            # Connect the OK button's click event to close the error_dialog
+            ok_button.clicked.connect(error_dialog.accept)
+
+            # Show the QDialog
+            error_dialog.exec_()
+            return  # Do not proceed with saving
 
         connection = sqlite3.connect("medicine.db")
         cursor = connection.cursor()
