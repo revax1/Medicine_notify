@@ -151,7 +151,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QCheckBox" name="ab_checkBox">
+   <widget class="QCheckBox" name="ad_checkBox">
     <property name="geometry">
      <rect>
       <x>370</x>
@@ -241,7 +241,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QCheckBox" name="bl2_checkBox">
+   <widget class="QCheckBox" name="bl_checkBox">
     <property name="geometry">
      <rect>
       <x>200</x>
@@ -271,7 +271,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QCheckBox" name="ad_checkBox">
+   <widget class="QCheckBox" name="ab_checkBox">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -586,7 +586,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="a_label">
+   <widget class="QLabel" name="l_label">
     <property name="geometry">
      <rect>
       <x>210</x>
@@ -607,10 +607,10 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="d_label">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>390</x>
       <y>100</y>
       <width>131</width>
       <height>41</height>
@@ -827,7 +827,7 @@ background-color: rgb(166, 0, 0)</string>
    </hints>
   </connection>
   <connection>
-   <sender>ad_checkBox</sender>
+   <sender>ab_checkBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>ab_pushButton</receiver>
    <slot>setEnabled(bool)</slot>
@@ -843,7 +843,7 @@ background-color: rgb(166, 0, 0)</string>
    </hints>
   </connection>
   <connection>
-   <sender>bl2_checkBox</sender>
+   <sender>bl_checkBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>bl_pushButton</receiver>
    <slot>setEnabled(bool)</slot>
@@ -891,7 +891,7 @@ background-color: rgb(166, 0, 0)</string>
    </hints>
   </connection>
   <connection>
-   <sender>ab_checkBox</sender>
+   <sender>ad_checkBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>ad_pushButton</receiver>
    <slot>setEnabled(bool)</slot>
@@ -939,7 +939,7 @@ background-color: rgb(166, 0, 0)</string>
    </hints>
   </connection>
   <connection>
-   <sender>bl2_checkBox</sender>
+   <sender>bl_checkBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>bl_cr_label</receiver>
    <slot>setEnabled(bool)</slot>
@@ -971,7 +971,7 @@ background-color: rgb(166, 0, 0)</string>
    </hints>
   </connection>
   <connection>
-   <sender>ad_checkBox</sender>
+   <sender>ab_checkBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>ab_cr_label</receiver>
    <slot>setEnabled(bool)</slot>
@@ -1003,7 +1003,7 @@ background-color: rgb(166, 0, 0)</string>
    </hints>
   </connection>
   <connection>
-   <sender>ab_checkBox</sender>
+   <sender>ad_checkBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>ad_cr_label</receiver>
    <slot>setEnabled(bool)</slot>
