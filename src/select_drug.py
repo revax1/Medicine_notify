@@ -6,56 +6,22 @@ import sqlite3
 class Ui_select_drug(object):
     def setupUi(self, select_drug):
         select_drug.setObjectName("select_drug")
-        select_drug.resize(1105, 835)
+        select_drug.resize(531, 401)
         select_drug.setStyleSheet("background-color: rgb(217, 244, 255)")
         self.centralwidget = QtWidgets.QWidget(select_drug)
         self.centralwidget.setObjectName("centralwidget")
         
-        # Connect to SQLite database
-        self.connection = sqlite3.connect("medicine.db")
-        self.cursor = self.connection.cursor()
-        
-        # Create Drug table
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Drug (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                description TEXT
-            )
-        ''')
-
-        # Create Drug_Meal table
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Drug_Meal (
-                drug_meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                meal_id INTEGER,
-                checkbox_state INTEGER,
-                time_selected TEXT,  -- เพิ่มคอลัมน์เก็บเวลาที่ผู้ใช้เลือก
-                drug_id INTEGER,
-                FOREIGN KEY (meal_id) REFERENCES Meal(meal_id),
-                FOREIGN KEY (drug_id) REFERENCES Drug(id)
-            )
-        ''')
-
-
-        # Create Meal table
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Meal (
-                meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                meal_name TEXT
-            )
-        ''')
         
         self.line = QtWidgets.QFrame(self.centralwidget)
-        self.line.setGeometry(QtCore.QRect(-20, 180, 1201, 16))
+        self.line.setGeometry(QtCore.QRect(-10, 110, 1201, 16))
         self.line.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line.setLineWidth(3)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setObjectName("line")
         self.drug_timing_label = QtWidgets.QLabel(self.centralwidget)
-        self.drug_timing_label.setGeometry(QtCore.QRect(320, 50, 541, 71))
+        self.drug_timing_label.setGeometry(QtCore.QRect(140, 30, 220, 71))
         font = QtGui.QFont()
-        font.setPointSize(24)
+        font.setPointSize(10)
         font.setBold(True)
         font.setWeight(75)
         self.drug_timing_label.setFont(font)
@@ -68,7 +34,7 @@ class Ui_select_drug(object):
         self.drug_timing_label.setWordWrap(True)
         self.drug_timing_label.setObjectName("drug_timing_label")
         self.select_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.select_back_pushButton.setGeometry(QtCore.QRect(50, 80, 131, 41))
+        self.select_back_pushButton.setGeometry(QtCore.QRect(10, 40, 91, 41))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.select_back_pushButton.setFont(font)
@@ -76,7 +42,7 @@ class Ui_select_drug(object):
 "background-color: rgb(166, 0, 0)")
         self.select_back_pushButton.setObjectName("select_back_pushButton")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setGeometry(QtCore.QRect(360, 70, 41, 41))
+        self.label_2.setGeometry(QtCore.QRect(150, 40, 41, 41))
         font = QtGui.QFont()
         font.setPointSize(24)
         font.setBold(True)
@@ -93,36 +59,39 @@ class Ui_select_drug(object):
         self.label_2.setWordWrap(True)
         self.label_2.setObjectName("label_2")
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
-        self.line_2.setGeometry(QtCore.QRect(560, 210, 20, 621))
+        self.line_2.setGeometry(QtCore.QRect(260, 130, 20, 621))
         self.line_2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_2.setLineWidth(3)
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_2.setObjectName("line_2")
         self.listWidget = QtWidgets.QListWidget(self.centralwidget)
-        self.listWidget.setGeometry(QtCore.QRect(680, 290, 341, 411))
+        self.listWidget.setGeometry(QtCore.QRect(290, 210, 221, 101))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.listWidget.setFont(font)
         self.listWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.listWidget.setFrameShape(QtWidgets.QFrame.Box)
         self.listWidget.setFrameShadow(QtWidgets.QFrame.Plain)
         self.listWidget.setLineWidth(1)
         self.listWidget.setObjectName("listWidget")
         self.select_drug_pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.select_drug_pushButton.setGeometry(QtCore.QRect(210, 730, 131, 41))
+        self.select_drug_pushButton.setGeometry(QtCore.QRect(80, 350, 91, 31))
         font = QtGui.QFont()
-        font.setPointSize(12)
+        font.setPointSize(10)
         self.select_drug_pushButton.setFont(font)
         self.select_drug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.select_drug_pushButton.setObjectName("select_drug_pushButton")
         self.drugHave_label = QtWidgets.QLabel(self.centralwidget)
-        self.drugHave_label.setGeometry(QtCore.QRect(740, 220, 231, 51))
+        self.drugHave_label.setGeometry(QtCore.QRect(280, 140, 231, 51))
         font = QtGui.QFont()
-        font.setPointSize(18)
+        font.setPointSize(12)
         self.drugHave_label.setFont(font)
         self.drugHave_label.setAlignment(QtCore.Qt.AlignCenter)
         self.drugHave_label.setObjectName("drugHave_label")
         self.listWidget_2 = QtWidgets.QListWidget(self.centralwidget)
-        self.listWidget_2.setGeometry(QtCore.QRect(80, 290, 411, 411))
+        self.listWidget_2.setGeometry(QtCore.QRect(20, 210, 201, 91))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setPointSize(10)
         self.listWidget_2.setFont(font)
         self.listWidget_2.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.listWidget_2.setFrameShape(QtWidgets.QFrame.Box)
@@ -130,33 +99,31 @@ class Ui_select_drug(object):
         self.listWidget_2.setLineWidth(1)
         self.listWidget_2.setObjectName("listWidget_2")
         self.drugHave_label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.drugHave_label_2.setGeometry(QtCore.QRect(110, 220, 361, 51))
+        self.drugHave_label_2.setGeometry(QtCore.QRect(-10, 140, 261, 51))
         font = QtGui.QFont()
-        font.setPointSize(18)
+        font.setPointSize(12)
         self.drugHave_label_2.setFont(font)
         self.drugHave_label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.drugHave_label_2.setObjectName("drugHave_label_2")
-        
         self.add_drug_pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.add_drug_pushButton.setGeometry(QtCore.QRect(780, 760, 131, 51))
+        self.add_drug_pushButton.setGeometry(QtCore.QRect(370, 360, 71, 21))
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(10)
         self.add_drug_pushButton.setFont(font)
         self.add_drug_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
 "background-color: rgb(81, 179, 85);")
         self.add_drug_pushButton.setObjectName("add_drug_pushButton")
-        
         self.drugHave_label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.drugHave_label_3.setGeometry(QtCore.QRect(670, 720, 361, 31))
+        self.drugHave_label_3.setGeometry(QtCore.QRect(290, 320, 231, 31))
         font = QtGui.QFont()
-        font.setPointSize(12)
+        font.setPointSize(8)
         self.drugHave_label_3.setFont(font)
         self.drugHave_label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.drugHave_label_3.setObjectName("drugHave_label_3")
         
         # Add the "เวลาจ่ายยา" button
         self.set_time_button = QtWidgets.QPushButton(self.centralwidget)
-        self.set_time_button.setGeometry(QtCore.QRect(900, 50, 101, 41))
+        self.set_time_button.setGeometry(QtCore.QRect(400, 50, 101, 41))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.set_time_button.setFont(font)
@@ -166,9 +133,9 @@ class Ui_select_drug(object):
         
         # Add QLabel to display selected time
         self.time_label = QtWidgets.QLabel(self.centralwidget)
-        self.time_label.setGeometry(QtCore.QRect(862, 120, 290, 40))
+        self.time_label.setGeometry(QtCore.QRect(355, 100, 170, 31))
         font = QtGui.QFont()
-        font.setPointSize(16)
+        font.setPointSize(10)
         self.time_label.setFont(font)
         self.time_label.setObjectName("time_label")
         self.time_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -178,7 +145,9 @@ class Ui_select_drug(object):
         self.retranslateUi(select_drug)
         QtCore.QMetaObject.connectSlotsByName(select_drug)
         
-        select_drug.showFullScreen()
+        # Connect to SQLite database
+        self.connection = sqlite3.connect("medicine.db")
+        self.cursor = self.connection.cursor()
 
         # กดปุ่มเพิ่มยา
         self.add_drug_pushButton.clicked.connect(self.open_add_drug_page)
@@ -196,7 +165,7 @@ class Ui_select_drug(object):
         
     def load_all_drugs(self):
         # Retrieve all drugs from the 'Drug' table
-        query = "SELECT id, name FROM Drug"
+        query = "SELECT drug_id, drug_name FROM Drug"
         drugs = self.cursor.execute(query).fetchall()
 
         # Clear the list before adding new items
@@ -261,7 +230,7 @@ class Ui_select_drug(object):
             # Insert the selected time into the 'Drug_Meal' table
             selected_time_for_sql = selected_time.toString("HH:mm")
             self.cursor.execute('''
-                INSERT INTO Drug_Meal (time_selected) VALUES (?)
+                INSERT INTO Meal (time) VALUES (?)
             ''', (selected_time_for_sql,))
             self.connection.commit()  # Commit the changes to the database
 
