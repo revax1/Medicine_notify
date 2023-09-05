@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Medicine_App</class>
+ <widget class="QMainWindow" name="Medicine_App">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>531</width>
+    <height>401</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>หน้าแรก</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources/resources.qrc">
+    <normaloff>:/icons/home_icon.png</normaloff>:/icons/home_icon.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(217, 244, 255)</string>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>40</width>
+    <height>40</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="Home_Page">
+   <widget class="QPushButton" name="addDrug_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>160</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>  เพิ่มยา</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../Resources/resources.qrc">
+      <normaloff>:/icons/drug_icon.png</normaloff>:/icons/drug_icon.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>40</height>
+     </size>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="home_label">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>40</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="lineWidth">
+     <number>1</number>
+    </property>
+    <property name="text">
+     <string>   หน้าแรก</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::AutoText</enum>
+    </property>
+    <property name="scaledContents">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>-10</x>
+      <y>110</y>
+      <width>551</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth">
+     <number>3</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="setting_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>160</y>
+      <width>161</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>  ตั้งค่ามื้อยา</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../Resources/resources.qrc">
+      <normaloff>:/icons/setting_icon.png</normaloff>:/icons/setting_icon.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>40</height>
+     </size>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="putDrug_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>220</y>
+      <width>261</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>  วิธีการใส่ยาในกล่องบรรจุยา</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../Resources/resources.qrc">
+      <normaloff>:/icons/istockphoto-1263011147-170667a.jpg</normaloff>:/icons/istockphoto-1263011147-170667a.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>50</height>
+     </size>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="alignment_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>280</y>
+      <width>211</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>  วิธีเรียงกล่องบรรจุยา</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../Resources/resources.qrc">
+      <normaloff>:/icons/Industry-Rack-icon.png</normaloff>:/icons/Industry-Rack-icon.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>50</height>
+     </size>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="drugLeft_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>340</y>
+      <width>231</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>  จำนวนมื้อยาคงเหลือ</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../Resources/resources.qrc">
+      <normaloff>:/icons/table_icon.png</normaloff>:/icons/table_icon.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>50</height>
+     </size>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>50</y>
+      <width>21</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>24</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="lineWidth">
+     <number>1</number>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::AutoText</enum>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="../Resources/resources.qrc">:/icons/home_icon.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>40</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>23:00:25</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>30</y>
+      <width>121</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>อา. 28 ก.ค.</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../Resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
