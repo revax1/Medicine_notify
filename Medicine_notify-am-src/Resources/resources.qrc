@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>next_icon.png</file>
+    <file>Flat_tick_icon.svg.png</file>
+    <file>home_icon.png</file>
+    <file>table_icon.png</file>
+    <file>setting_icon.png</file>
+    <file>istockphoto-1263011147-170667a.jpg</file>
+    <file>Industry-Rack-icon.png</file>
+    <file>drug_icon.png</file>
+  </qresource>
+  <qresource prefix="image">
+    <file>med_pack2_img.png</file>
+    <file>med_pack1_img.png</file>
+  </qresource>
+</RCC>
