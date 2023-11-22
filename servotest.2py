@@ -1,0 +1,50 @@
+import RPi.GPIO as GPIO
+import time
+
+# กำหนดขา GPIO ที่ใช้ควบคุม servo motor
+servo1_pin = 17
+servo2_pin = 18
+
+# กำหนดค่า PWM สำหรับ servo motor (ให้ตั้งค่าตามความเหมาะสมของ servo motor ที่ใช้)
+# ค่า duty cycle สูงสุดของ SG90 servo motor เป็นประมาณ 12% และค่า duty cycle ต่ำสุดเป็นประมาณ 2%
+servo_min_duty = 2
+servo_max_duty = 12
+
+# กำหนดค่า PWM frequency (ความถี่) สำหรับ servo motor
+pwm_frequency = 50
+
+# ตั้งค่า GPIO mode เป็น BCM
+GPIO.setmode(GPIO.BCM)
+
+# ตั้งค่าขา GPIO เป็น OUTPUT
+GPIO.setup(servo1_pin, GPIO.OUT)
+GPIO.setup(servo2_pin, GPIO.OUT)
+
+# สร้าง object PWM (Pulse Width Modulation) สำหรับ servo motor
+servo1_pwm = GPIO.PWM(servo1_pin, pwm_frequency)
+servo2_pwm = GPIO.PWM(servo2_pin, pwm_frequency)
+
+# เริ่มต้นการใช้งาน PWM
+servo1_pwm.start(0)
+servo2_pwm.start(0)
+
+# ฟังก์ชันสำหรับตั้งค่าของ servo motor
+def set_servo_position(pwm, duty_cycle):
+    pwm.ChangeDutyCycle(duty_cycle)
+
+try:
+    while True:
+        # ตั้งค่า servo motor 1 และ servo motor 2 ให้หมุนไปที่ตำแหน่งต่างๆ
+        set_servo_position(servo1_pwm, 5)  # ตำแหน่ง 5%
+        set_servo_position(servo2_pwm, 8)  # ตำแหน่ง 8%
+        time.sleep(1)
+
+        set_servo_position(servo1_pwm, 10)  # ตำแหน่ง 10%
+        set_servo_position(servo2_pwm, 4)  # ตำแหน่ง 4%
+        time.sleep(1)
+
+except KeyboardInterrupt:
+    # ปิดการใช้งาน PWM และตั้งค่า GPIO เป็นโหมด INPUT เพื่อป้องกันความเสียหาย
+    servo1_pwm.stop()
+    servo2_pwm.stop()
+    GPIO.cleanup()
