@@ -1,0 +1,120 @@
+from PyQt5 import QtCore, QtGui, QtWidgets, QtSql
+from AddDrug_New import Ui_Add_drug
+
+import sqlite3
+
+class Ui_drug_List(object):
+    def setupUi(self, drug_List):
+        drug_List.setObjectName("drug_List")
+        drug_List.resize(531, 401)
+        drug_List.setStyleSheet("background-color: rgb(217, 244, 255)")
+        self.centralwidget = QtWidgets.QWidget(drug_List)
+        self.centralwidget.setObjectName("centralwidget")
+        self.line = QtWidgets.QFrame(self.centralwidget)
+        self.line.setGeometry(QtCore.QRect(-10, 80, 551, 20))
+        self.line.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.line.setLineWidth(3)
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setObjectName("line")
+        self.label = QtWidgets.QLabel(self.centralwidget)
+        self.label.setGeometry(QtCore.QRect(190, 20, 141, 51))
+        font = QtGui.QFont()
+        font.setPointSize(24)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.label.setFrameShape(QtWidgets.QFrame.Box)
+        self.label.setLineWidth(1)
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setScaledContents(False)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setObjectName("label")
+        self.add_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.add_back_pushButton.setGeometry(QtCore.QRect(30, 40, 71, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.add_back_pushButton.setFont(font)
+        self.add_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
+"background-color: rgb(166, 0, 0)")
+        self.add_back_pushButton.setObjectName("add_back_pushButton")
+        self.add_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.add_pushButton.setGeometry(QtCore.QRect(410, 40, 81, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.add_pushButton.setFont(font)
+        self.add_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
+"background-color: rgb(81, 179, 85);")
+        self.add_pushButton.setObjectName("add_pushButton")
+        drug_List.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(drug_List)
+        QtCore.QMetaObject.connectSlotsByName(drug_List)
+
+        self.drug_list_widget = QtWidgets.QListWidget(self.centralwidget)
+        self.drug_list_widget.setGeometry(QtCore.QRect(20, 120, 491, 261))
+        self.update_drug_list()  # เรียกใช้ฟังก์ชันเพื่อแสดงรายการยาในคลังยา
+
+
+        def close_window():
+            drug_List.close()
+            
+        self.add_back_pushButton.clicked.connect(close_window)
+            
+        self.add_pushButton.clicked.connect(self.open_add_drug)
+        
+
+        
+
+    # def open_add_drug(self):
+    #         self.add_drug_window = QtWidgets.QMainWindow()
+    #         self.add_drug_ui = Ui_Add_drug()
+    #         self.add_drug_ui.setupUi(self.add_drug_window)
+    #         self.add_drug_window.show()
+    #         # if self.add_drug_window.close():
+    #         #     self.update_drug_list()
+
+    def open_add_drug(self):
+        self.add_drug_window = QtWidgets.QMainWindow()
+        self.add_drug_ui = Ui_Add_drug()
+
+        self.add_drug_ui.setupUi(self.add_drug_window)
+        self.add_drug_window.show()
+
+       
+
+
+    def update_drug_list(self):
+        connection = sqlite3.connect("medicine.db")
+        cursor = connection.cursor()
+        cursor.execute("SELECT drug_name FROM Drug")
+        drugs = cursor.fetchall()
+        connection.close()
+        # ล้างรายการยาเก่าใน QListWidget
+        self.drug_list_widget.clear()
+        # เพิ่มรายการยาใหม่ลงใน QListWidget
+        for drug in drugs:
+            self.drug_list_widget.addItem(drug[0])      
+
+    def retranslateUi(self, drug_List):
+        _translate = QtCore.QCoreApplication.translate
+        drug_List.setWindowTitle(_translate("drug_List", "คลังยา"))
+        self.label.setText(_translate("drug_List", "คลังยา"))
+        self.add_back_pushButton.setText(_translate("drug_List", "ย้อนกลับ"))
+        self.add_pushButton.setText(_translate("drug_List", "เพิ่มยา"))
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+    db.setDatabaseName("medicine.db")
+    if not db.open():
+        print("Cannot establish a database connection.")
+        sys.exit(1)
+        
+    drug_List = QtWidgets.QMainWindow()
+    ui = Ui_drug_List()
+    ui.setupUi(drug_List)
+    drug_List.show()
+    sys.exit(app.exec_())

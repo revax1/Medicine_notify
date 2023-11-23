@@ -2,12 +2,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_med_pack(object):
     def __init__(self):
-        self.med_pack = None  # Initial med_pack ตัวแปรที่ใช้สำหรับเก็บข้อมูลของออบเจ็ค (instance variable)
+        self.med_pack = None  # Initialize med_pack as an instance variable
     
     def setupUi(self, med_pack):
-        self.med_pack = med_pack  # กำหนดหน้าต่าง instance ให้กับ med_pack
+        self.med_pack = med_pack  # Assign the main window instance to med_pack
         med_pack.setObjectName("med_pack")
-        med_pack.resize(1104, 839)
+        med_pack.resize(531, 401)
         font = QtGui.QFont()
         font.setPointSize(10)
         med_pack.setFont(font)
@@ -15,11 +15,10 @@ class Ui_med_pack(object):
         med_pack.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget = QtWidgets.QWidget(med_pack)
         self.centralwidget.setObjectName("centralwidget")
-        
         self.packMed_label = QtWidgets.QLabel(self.centralwidget)
-        self.packMed_label.setGeometry(QtCore.QRect(230, 50, 681, 71))
+        self.packMed_label.setGeometry(QtCore.QRect(100, 30, 361, 51))
         font = QtGui.QFont()
-        font.setPointSize(24)
+        font.setPointSize(14)
         font.setBold(True)
         font.setWeight(75)
         self.packMed_label.setFont(font)
@@ -31,9 +30,8 @@ class Ui_med_pack(object):
         self.packMed_label.setAlignment(QtCore.Qt.AlignCenter)
         self.packMed_label.setWordWrap(True)
         self.packMed_label.setObjectName("packMed_label")
-        
         self.pack_icon_label = QtWidgets.QLabel(self.centralwidget)
-        self.pack_icon_label.setGeometry(QtCore.QRect(270, 70, 41, 41))
+        self.pack_icon_label.setGeometry(QtCore.QRect(110, 40, 31, 31))
         font = QtGui.QFont()
         font.setPointSize(24)
         font.setBold(True)
@@ -49,74 +47,62 @@ class Ui_med_pack(object):
         self.pack_icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.pack_icon_label.setWordWrap(True)
         self.pack_icon_label.setObjectName("pack_icon_label")
-        
-        self.line = QtWidgets.QFrame(self.centralwidget)
-        self.line.setGeometry(QtCore.QRect(-20, 180, 1201, 16))
-        self.line.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.line.setLineWidth(3)
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setObjectName("line")
-        
         self.pack_back_pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pack_back_pushButton.setGeometry(QtCore.QRect(50, 80, 131, 41))
+        self.pack_back_pushButton.setGeometry(QtCore.QRect(20, 30, 61, 31))
         font = QtGui.QFont()
-        font.setPointSize(12)
+        font.setPointSize(6)
         self.pack_back_pushButton.setFont(font)
-        self.pack_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);border: 1px solid rgb(166, 0, 0); border-radius: 10px;\n"
+        self.pack_back_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
 "background-color: rgb(166, 0, 0)")
         self.pack_back_pushButton.setObjectName("pack_back_pushButton")
-        
         self.frame = QtWidgets.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(90, 230, 931, 471))
+        self.frame.setGeometry(QtCore.QRect(70, 130, 391, 201))
         self.frame.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.frame.setFrameShape(QtWidgets.QFrame.Box)
         self.frame.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame.setObjectName("frame")
-        
         self.step_label = QtWidgets.QLabel(self.frame)
-        self.step_label.setGeometry(QtCore.QRect(40, 50, 411, 41))
+        self.step_label.setGeometry(QtCore.QRect(20, 10, 241, 41))
         font = QtGui.QFont()
-        font.setPointSize(24)
+        font.setPointSize(14)
         self.step_label.setFont(font)
         self.step_label.setObjectName("step_label")
         self.img_label = QtWidgets.QLabel(self.frame)
-        self.img_label.setGeometry(QtCore.QRect(280, 160, 401, 231))
+        self.img_label.setGeometry(QtCore.QRect(120, 80, 141, 81))
         self.img_label.setText("")
         self.img_label.setPixmap(QtGui.QPixmap(":/image/med_pack1_img.png"))
         self.img_label.setScaledContents(True)
         self.img_label.setAlignment(QtCore.Qt.AlignCenter)
         self.img_label.setObjectName("img_label")
-        
         self.next_pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.next_pushButton.setGeometry(QtCore.QRect(930, 740, 131, 61))
+        self.next_pushButton.setGeometry(QtCore.QRect(440, 340, 71, 31))
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(6)
         self.next_pushButton.setFont(font)
-        self.next_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);border: 1px solid rgb(0, 0, 0); border-radius: 10px;")
+        self.next_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/next_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.next_pushButton.setIcon(icon)
-        self.next_pushButton.setIconSize(QtCore.QSize(30, 30))
+        self.next_pushButton.setIconSize(QtCore.QSize(20, 30))
         self.next_pushButton.setObjectName("next_pushButton")
-        
+        self.line_2 = QtWidgets.QFrame(self.centralwidget)
+        self.line_2.setGeometry(QtCore.QRect(-10, 100, 551, 20))
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.line_2.setLineWidth(3)
+        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_2.setObjectName("line_2")
         med_pack.setCentralWidget(self.centralwidget)
         
         self.retranslateUi(med_pack)
         QtCore.QMetaObject.connectSlotsByName(med_pack)
         
-        ############################################ Edit ########################################################
-        # เต็มจอ
-        med_pack.showFullScreen()
+        self.next_pushButton.clicked.connect(self.showMedPack2)
         
-        # ปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 1
         def close_window_1():
             med_pack.close()
 
-        ########################## ปุ่มในหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 1 #########################
-        self.pack_back_pushButton.clicked.connect(close_window_1)       # ปุ่มย้อนกลับไปหน้าแรก
-        self.next_pushButton.clicked.connect(self.showMedPack2)         # ปุ่มเปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 2
+        self.pack_back_pushButton.clicked.connect(close_window_1)
         
-    ################################### แสดงหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 2 ################################
     def showMedPack2(self):
         self.med_pack2 = QtWidgets.QMainWindow()
         self.ui2 = Ui_med_pack2()
@@ -124,9 +110,8 @@ class Ui_med_pack(object):
         self.ui2.showMedPack(self.med_pack2)
         self.med_pack2.show()
         
-    ################################### ปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยา ################################
     def closeMedPack(self):
-        self.med_pack.close()  
+        self.med_pack.close()  # Close the main window
         self.med_pack2.close()
 
 
@@ -144,7 +129,7 @@ class Ui_med_pack2(object):
         self.ui_med_pack = ui_med_pack  # เก็บ instance ของ Ui_med_pack เอาไว้ในตัวแปร
 
         med_pack2.setObjectName("med_pack2")
-        med_pack2.resize(1104, 839)
+        med_pack2.resize(531, 401)
         font = QtGui.QFont()
         font.setPointSize(10)
         med_pack2.setFont(font)
@@ -152,11 +137,10 @@ class Ui_med_pack2(object):
         med_pack2.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget2 = QtWidgets.QWidget(med_pack2)
         self.centralwidget2.setObjectName("centralwidget2")
-        
         self.packMed2_label = QtWidgets.QLabel(self.centralwidget2)
-        self.packMed2_label.setGeometry(QtCore.QRect(230, 50, 681, 71))
+        self.packMed2_label.setGeometry(QtCore.QRect(100, 30, 361, 51))
         font = QtGui.QFont()
-        font.setPointSize(24)
+        font.setPointSize(14)
         font.setBold(True)
         font.setWeight(75)
         self.packMed2_label.setFont(font)
@@ -168,9 +152,8 @@ class Ui_med_pack2(object):
         self.packMed2_label.setAlignment(QtCore.Qt.AlignCenter)
         self.packMed2_label.setWordWrap(True)
         self.packMed2_label.setObjectName("packMed2_label")
-        
         self.pack_icon2_label = QtWidgets.QLabel(self.centralwidget2)
-        self.pack_icon2_label.setGeometry(QtCore.QRect(270, 70, 41, 41))
+        self.pack_icon2_label.setGeometry(QtCore.QRect(110, 40, 31, 31))
         font = QtGui.QFont()
         font.setPointSize(24)
         font.setBold(True)
@@ -186,80 +169,67 @@ class Ui_med_pack2(object):
         self.pack_icon2_label.setAlignment(QtCore.Qt.AlignCenter)
         self.pack_icon2_label.setWordWrap(True)
         self.pack_icon2_label.setObjectName("pack_icon2_label")
-        
         self.line2 = QtWidgets.QFrame(self.centralwidget2)
-        self.line2.setGeometry(QtCore.QRect(-20, 180, 1201, 16))
+        self.line2.setGeometry(QtCore.QRect(-10, 100, 541, 20))
         self.line2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line2.setLineWidth(3)
         self.line2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line2.setObjectName("line2")
-        
         self.pack_back2_pushButton = QtWidgets.QPushButton(self.centralwidget2)
-        self.pack_back2_pushButton.setGeometry(QtCore.QRect(50, 80, 131, 41))
+        self.pack_back2_pushButton.setGeometry(QtCore.QRect(20, 30, 61, 31))
         font = QtGui.QFont()
-        font.setPointSize(12)
+        font.setPointSize(6)
         self.pack_back2_pushButton.setFont(font)
-        self.pack_back2_pushButton.setStyleSheet("color: rgb(255, 255, 255);border: 1px solid rgb(166, 0, 0); border-radius: 10px;\n"
+        self.pack_back2_pushButton.setStyleSheet("color: rgb(255, 255, 255);\n"
 "background-color: rgb(166, 0, 0)")
         self.pack_back2_pushButton.setObjectName("pack_back2_pushButton")
-        
         self.frame2 = QtWidgets.QFrame(self.centralwidget2)
-        self.frame2.setGeometry(QtCore.QRect(90, 230, 931, 471))
+        self.frame2.setGeometry(QtCore.QRect(70, 130, 391, 201))
         self.frame2.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.frame2.setFrameShape(QtWidgets.QFrame.Box)
         self.frame2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame2.setObjectName("frame2")
-        
         self.step2_label = QtWidgets.QLabel(self.frame2)
-        self.step2_label.setGeometry(QtCore.QRect(40, 50, 601, 41))
+        self.step2_label.setGeometry(QtCore.QRect(10, 10, 361, 51))
         font = QtGui.QFont()
-        font.setPointSize(24)
+        font.setPointSize(14)
         self.step2_label.setFont(font)
         self.step2_label.setObjectName("step2_label")
-        
         self.img2_label = QtWidgets.QLabel(self.frame2)
-        self.img2_label.setGeometry(QtCore.QRect(230, 160, 451, 231))
+        self.img2_label.setGeometry(QtCore.QRect(100, 80, 171, 91))
         self.img2_label.setText("")
         self.img2_label.setPixmap(QtGui.QPixmap(":/image/med_pack2_img.png"))
         self.img2_label.setScaledContents(True)
         self.img2_label.setAlignment(QtCore.Qt.AlignCenter)
         self.img2_label.setObjectName("img2_label")
-        
         self.next2_pushButton = QtWidgets.QPushButton(self.centralwidget2)
-        self.next2_pushButton.setGeometry(QtCore.QRect(890, 740, 171, 61))
+        self.next2_pushButton.setGeometry(QtCore.QRect(440, 340, 71, 31))
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(6)
         self.next2_pushButton.setFont(font)
-        self.next2_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);border: 1px solid rgb(0, 0, 0); border-radius: 10px;")
+        self.next2_pushButton.setStyleSheet("background-color: rgb(206, 255, 197);")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/next_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.next2_pushButton.setIcon(icon)
-        self.next2_pushButton.setIconSize(QtCore.QSize(30, 30))
+        self.next2_pushButton.setIconSize(QtCore.QSize(20, 30))
         self.next2_pushButton.setObjectName("next2_pushButton")
-        
         med_pack2.setCentralWidget(self.centralwidget2)
 
         self.retranslateUi(med_pack2)
         QtCore.QMetaObject.connectSlotsByName(med_pack2)
         
-        ############################################ Edit ###############################################
-        # เต็มจอ
-        med_pack2.showFullScreen()
+        self.next2_pushButton.clicked.connect(self.closeMedPack)  # เชื่อมตัวดำเนินการปิดหน้าต่าง
         
-        # ปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 2
         def close_window_2():
             med_pack2.close()
-        
-        ########################## ปุ่มในหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 2 #########################
-        self.next2_pushButton.clicked.connect(self.closeMedPack)        # ปุ่มปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาเพื่อไป หน้าแรก
-        self.pack_back2_pushButton.clicked.connect(close_window_2)      # ปุ่มย้อนกลับไปหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 1
 
-    ########################## เปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาหน้าที่ 2 #########################
+        self.pack_back2_pushButton.clicked.connect(close_window_2)
+        
     def showMedPack(self, med_pack2):
+
         self.med_pack2 = med_pack2  # บันทึกตัวแปรเข้าสมาชิกของคลาส
         self.med_pack2.show()
-       
-    ########################## ปิดหน้าต่างวิธีการใส่ยาในกล่องบรรจุยาเพื่อไป หน้าแรก ######################### 
+        
     def closeMedPack(self):
         self.ui_med_pack.closeMedPack()  # เรียกใช้เมธอด closeMedPack ของ Ui_med_pack
         self.med_pack2.close()  # ปิดหน้าต่างที่เป็นส่วนสมาชิกของ Ui_med_pack2
