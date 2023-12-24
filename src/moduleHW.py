@@ -11,6 +11,7 @@ import RPi.GPIO as GPIO
 import subprocess
 import multiprocessing
 import requests
+import sqlite3
 
 # Import the PCA9685 module.
 import Adafruit_PCA9685
@@ -22,18 +23,21 @@ import Adafruit_PCA9685
 #GPIO Mode (BOARD / BCM)
 GPIO.setmode(GPIO.BCM)
 
-
 #set GPIO Pins Ultrasonic Sensor
 GPIO_TRIGGER = 18 
 GPIO_ECHO = 24
 
 #set GPIO Pins Motion Sensor
 GPIO_PIR = 23
- 
+
+# #et GPIO Pins LED
+led_pin = 16
+
 #set GPIO direction (IN / OUT)
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 GPIO.setup(GPIO_PIR, GPIO.IN)
+GPIO.setup(led_pin, GPIO.OUT)
 
 ####################### สำหรับ Ultrasonic Sensor ########################
 
@@ -110,11 +114,9 @@ def set_servo_pulse(channel, pulse):
 # Set frequency to 60hz, good for servos.
 pwm.set_pwm_freq(60)
 
-########################################################################
-
 ############################# สำหรับ Audio ##############################
 
-def play_auido():
+def play_recieve_drug_audio():
     # Initialize Pygame
     pygame.init()
     clock = pygame.time.Clock()
@@ -124,7 +126,7 @@ def play_auido():
     print(the_time)
 
     # Play Sound
-    print("เล่นไฟล์เสียง")
+    print("ถึงเวลารับประทานยา")
     pygame.mixer.init()
     pygame.mixer.music.load("mario.mp3")
     pygame.mixer.music.play()
@@ -137,36 +139,62 @@ def play_auido():
     pygame.mixer.quit()
     pygame.quit()
     
-########################################################################
+def beep():
+    subprocess.run(["python3", "/home/pi/Documents/Medicine_notify/src/beep.py"])
+
+# def beep_audio():
+#     # Initialize Pygame
+#     pygame.init()
+#     clock = pygame.time.Clock()
+
+#     # Set the duration to 1 minute (60,000 milliseconds)
+
+#     pygame.mixer.init()
+#     pygame.mixer.music.load("beep.mp3")
+#     pygame.mixer.music.play()
+#     time.sleep(3)
+
+#     # Wait for the sound to finish playing
+#     while pygame.mixer.music.get_busy():
+#         clock.tick(0.5)
+
+#     # Clean up Pygame
+#     pygame.mixer.quit()
+#     pygame.quit()
 
 ########################### สำหรับรัน Server #############################
 
 def server():
     subprocess.run(["./server.sh"])
     
-########################################################################
-
 ############################# สำหรับถ่ายภาพ ##############################
 
 def capture_image():
     subprocess.run(["./capture_image.sh"])
-    
-########################################################################
 
 ########################## สำหรับ PIR Sensor ############################
 
 def motion_detect():
     # print("Waiting for sensor to settle")
-    time.sleep(0.2)                   #Waiting 2 seconds for the sensor to initiate
-    # print("Detecting motion")
 
-    if GPIO.input(GPIO_PIR):             #Check whether pir is HIGH
+    if GPIO.input(GPIO_PIR):              # Check whether pir is HIGH
         print("Motion Detected!")
-        time.sleep(0.2)              #D1- Delay to avoid multiple detection
-        time.sleep(0.1)  #While loop delay should be less than detection delay
+
 
 ########################################################################
 
+def led_blink():
+    # Turn the LED on
+    GPIO.output(led_pin, GPIO.HIGH)
+    time.sleep(0.3)  # Pause for 1 second
+
+    # Turn the LED off
+    GPIO.output(led_pin, GPIO.LOW)
+    time.sleep(0.3)  # Pause for 1 second
+
+# def led_blink():
+#     subprocess.run(["python3", "/home/pi/Documents/Medicine_notify/src/led_blink.py"])
+    
 ##################### สำหรับ Line Messaging API #########################
 
 # ส่งรูปภาพเมื่อมารับยา
@@ -215,22 +243,66 @@ def not_receive_line(channel_access_token):
     response = requests.post(url, json=data, headers=headers)
     print(response.text)
     
+def wait_receive_line(channel_access_token, number):
+    url = "https://api.line.me/v2/bot/message/push"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + channel_access_token,
+    }
+
+    data = {
+        "to": "Ub6246111505735410a4409ab3601a7f1",
+        "messages": [
+            {
+                "type": "text",
+                "text": f"แจ้งเตือนครั้งที่ {number} ผู้สูงอายุยังไม่มารับยาใน {number*5} นาทีนี้",
+            }
+        ],
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    print(response.text)
+    
 ########################################################################
 
-before_breakfast = "12:38:30"
-after_breakfast = "12:55:40"
+def load_meal_times_from_database():
+    connection = sqlite3.connect("medicine.db")
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT meal_name, time FROM Meal")
+    drugs = cursor.fetchall()
+
+    meal_times = dict(drugs)
+
+    connection.close()
+
+    return meal_times
+
+meal_times = load_meal_times_from_database()
+
+GPIO.output(led_pin, GPIO.LOW)
+
+before_breakfast = "02:02:00"
+after_breakfast = "02:02:30"
 before_lunch = "12:55:50"
 after_lunch = "12:56:00"
 before_dinner = "12:56:10"
 after_dinner = "12:56:20"
 before_sleep = "12:56:30"
+
+# # Access meal times using the meal names
+# before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
+# after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
+# before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
+# after_lunch = meal_times.get("มื้อเที่ยง หลังอาหาร", "")
+# before_dinner = meal_times.get("มื้อเย็น ก่อนอาหาร", "")
+# after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
+# before_sleep = meal_times.get("มื้อก่อนนอน", "")
     
 print('Moving servo on channel 0, press Ctrl-C to quit...')
 
 # รัน Process แบบ Multiprocessing
 web_server_process = multiprocessing.Process(target=server)
-capture_image_process = multiprocessing.Process(target=capture_image)
-
 # รัน web_server
 web_server_process.start()
 
@@ -246,8 +318,14 @@ try:
         current_time = now.strftime("%H:%M:%S")
         current_day = now.strftime("%A")  # Get the current day of the week
         print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
-        if current_day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] and \
-        current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
+        
+        # hours, minutes, seconds = map(int, current_time.split(':'))
+        # time_second = (hours*60*60) + (minutes*60) + seconds
+        # print(f"time old:{time_second}")
+        
+        # beep_process = multiprocessing.Process(target=beep)
+        
+        if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
             
             row, col, servoNum = load_state()
             while col < max_col:
@@ -256,6 +334,7 @@ try:
                     current_time = now.strftime("%H:%M:%S")
                     current_day = now.strftime("%A")  # Get the current day of the week
                     print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
+                    
                     
                     if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
                         
@@ -272,16 +351,35 @@ try:
                                                             
                         row += 1
                         
-                        play_auido()
+                        play_recieve_drug_audio()
                         
-                        start_time = time.time()  # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
+                        # Line
+                        start_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
+                        notify_time = 1                     # จำนวนครั้งการแจ้งเตือนไลน์
+                        notify_second = 30                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
+                        max_replay_notify = 3               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
                         
-                        count_audio = 0
+                        # ไฟล์เสียง beep
+                        audio_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะการเล่นไฟล์เสียง
+                        audio_play = 3                      # เล่นไฟล์ใน 3 วินาที
+                        
+                        # ระยะจากคนและกล่องจ่ายยา (cm)
+                        range_user = 15                     # ระยะจากผู้ใช้กับตัวกล่องยา
+                        
+                        # LED
+                        start_led_time = time.time()
+                        led_play = 3
+                        
+                        beep_process = multiprocessing.Process(target=beep)
+                        
+                        # # led_blink_process = multiprocessing.Process(target=led_blink)
+                        led_blink_process = multiprocessing.Process(target=led_blink)
+                        led_blink_process.start
+                        
+                        get_drug = False
                         while True:
-                            get_drug = False
-                            notify_time = 30
-                            max_replay_notify = 2               # จำนวนการแจ้งเตือนไฟล์เสียง (ไม่นับการแจ้งเตือนครั้งแรกสุด)
-                            range_user = 15                     # ระยะจากผู้ใช้กับตัวกล่องยา
+                            
+                            # beep_process.join()
                             
                             dist1 = distance()
                             time.sleep(0.2)
@@ -290,24 +388,43 @@ try:
                             
                             print ("Measured Distance 1 = %.1f cm" % dist1)
                             print ("Measured Distance 2 = %.1f cm" % dist2)
-                            
                             motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
                             
+                            led_blink()
+                            
+                            # if time.time() - start_led_time <= led_play and not get_drug:
+                                
+                            #     start_led_time = time.time()
+                                
+                            
+                            # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
+                            if time.time() - audio_time >= audio_play and not get_drug:
+                                beep_process = multiprocessing.Process(target=beep)
+                                beep_process.start()
+                                # beep_audio()
+                                audio_time = time.time()
+                                
+                            
                             if dist1 < range_user and dist2 < range_user and GPIO.input(GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                get_drug = True                                                             # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
-                                     
+                                get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                                                  
                             
                             # เงื่อนไขการแจ้งเตือนซ้ำ
-                            if time.time() - start_time >= notify_time and count_audio != max_replay_notify:
-                                play_auido()
-                                count_audio += 1
-                                # print(count_audio)
+                            if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
+                                print(time.time)
+                                print(start_time)
+                                wait_receive_line(channel_access_token, notify_time)
+                                notify_time += 1
+                                                       
                                 start_time = time.time()
                             
                             # เงื่อนไขไม่มารีบยา
-                            if time.time() - start_time >= notify_time and count_audio == max_replay_notify:
+                            if time.time() - start_time >= notify_second and notify_time == max_replay_notify:
+                                wait_receive_line(channel_access_token, notify_time)
+                                time.sleep(3)
                                 print("ผู้สูงอายุไม่มารับยา")
-                                count_audio = 0
+                                # count_audio = 0
+                                notify_time = 1
                                 
                                 # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                 # time.sleep(2)
@@ -321,18 +438,22 @@ try:
                             # เงื่อนไขถ้ามารับยา
                             if get_drug:
                                 print("ผู้สูงอายุมารับยาแล้ว")
-                                
+                                beep_process.join()
+                                # led_blink_process.join()
+                                                                
+                                capture_image_process = multiprocessing.Process(target=capture_image)
                                 capture_image_process.start()
+                                capture_image_process.join()
                                 
                                 send_image_to_line(image_url, channel_access_token)
                                 
-                                count_audio = 0
+                                # time.sleep(60)              # ใช้เมื่อเวลาไม่ใช่ %H:%M:%S แต่เป็น %H:%M
+                                
                                 break
-                        
+                            
                         if not row == max_row:
                             save_state(row, col, servoNum)  # Save the current state
                         
-                    else:
                         time.sleep(1)
                         
                 # เพิ่มเงื่อนไขที่ถ้า row = 3 ให้กลับไปที่ 0
