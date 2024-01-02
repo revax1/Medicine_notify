@@ -5,31 +5,23 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtSql
 
 os.environ["QT_IM_MODULE"] = "qtvirtualkeyboard"
 
+
 import sqlite3
 
-def handleVisibleChanged():
-    if not QtGui.QGuiApplication.inputMethod().isVisible():
-        return
-    for w in QtGui.QGuiApplication.allWindows():
-        if w.metaObject().className() == "QtVirtualKeyboard::InputView":
-            keyboard = w.findChild(QtCore.QObject, "keyboard")
-            if keyboard is not None:
-                r = w.geometry()
-                r.moveTop(keyboard.property("y"))
-                w.setMask(QtGui.QRegion(r))
-                return
 
 class NumericOnlyTextEdit(QtWidgets.QTextEdit):
     def keyPressEvent(self, event):
-        # Allow onWly numeric characters and certain key events (e.g., Backspace)
-        if event.key() == QtCore.Qt.Key_Backspace or event.text().isdigit():
+        # Allow only numeric characters and certain key events (e.g., Backspace)
+        if event.key() == QtCore.Qt.Key_Backspace or event.text().isdigit() or event.text() == '.':
             super().keyPressEvent(event)
         else:
             event.ignore()
-
-
 class Ui_Add_drug(object):
-    def setupUi(self, Add_drug):
+
+    def setupUi(self, Add_drug, drug_List):
+        self.Add_drug = Add_drug
+        self.drug_List = drug_List
+        
         Add_drug.setObjectName("Add_drug")
         Add_drug.resize(531, 401)
         icon = QtGui.QIcon()
@@ -177,16 +169,13 @@ class Ui_Add_drug(object):
         QtCore.QMetaObject.connectSlotsByName(Add_drug)
         Add_drug.setTabOrder(self.textEdit, self.textEdit_2)
         Add_drug.setTabOrder(self.textEdit_2, self.saveDrug_pushButton)
+
+        self.add_back_pushButton.clicked.connect(self.closeAll)
+
         #Add_drug.setTabOrder(self.saveDrug_pushButton, self.listHave_pushButton)
         #Add_drug.setTabOrder(self.listHave_pushButton, self.add_back_pushButton)
+
         
-        QtGui.QGuiApplication.inputMethod().visibleChanged.connect(handleVisibleChanged)
-        
-        
-        def close_window():
-            Add_drug.close()
-            
-        self.add_back_pushButton.clicked.connect(close_window)
 
         #def open_drug_list():
         #    drug_list_window = QtWidgets.QMainWindow()
@@ -246,11 +235,10 @@ class Ui_Add_drug(object):
             # Show the QDialog
             error_dialog.exec_()
             return  # Do not proceed with saving
-        self.update_drug_list
 
         connection = sqlite3.connect("medicine.db")
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO Drug (drug_name, drug_description, drug_amount, drug_eat) VALUES (?, ?, ?, ?)", (drug_name, drug_description, drug_amount, drug_eat))
+        cursor.execute("INSERT INTO Drug (drug_name, drug_description, drug_remaining, drug_eat) VALUES (?, ?, ?, ?)", (drug_name, drug_description, drug_amount, drug_eat))
         connection.commit()
         connection.close()
 
@@ -302,11 +290,10 @@ class Ui_Add_drug(object):
         self.textEdit_2.clear()
         self.textEdit_3.clear()
         self.textEdit_4.clear()
-
-    def update_drug_list(self):
-        # เพิ่มรายการยาลงใน QListWidget หรือหน้าจอคลังยา
-        pass
-
+        
+    def closeAll(self):
+        self.drug_List.closeAll()
+        self.Add_drug.close()
 
     def retranslateUi(self, Add_drug):
         _translate = QtCore.QCoreApplication.translate
@@ -317,11 +304,13 @@ class Ui_Add_drug(object):
         self.drugAll_label.setText(_translate("Add_drug", "จำนวนยาทั้งหมดที่มี (เม็ด)"))
         self.saveDrug_pushButton.setText(_translate("Add_drug", "บันทึกยา"))
         #self.listHave_pushButton.setText(_translate("Add_drug", "รายการยาที่มี"))
-        self.add_back_pushButton.setText(_translate("Add_drug", "ย้อนกลับ"))
+        self.add_back_pushButton.setText(_translate("Add_drug", "หน้าหลัก"))
         self.drugOne_label.setText(_translate("Add_drug", "จำนวนยาที่กินต่อ 1 มื้อ (เม็ด)"))
+        
 import resources_rc
 
 if __name__ == "__main__":
+    import sys
     app = QtWidgets.QApplication(sys.argv)
     db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName("medicine.db")
