@@ -4,6 +4,7 @@ from select_time import Ui_select_time
 from pack_med import Ui_med_pack
 from sortDrug import Ui_sortDrug
 from drugTotal import Ui_drugTotal
+from moduleHW import MedicineDispenser
 
 import sqlite3
 

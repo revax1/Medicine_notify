@@ -290,14 +290,6 @@ class MedicineDispenser:
 
         GPIO.output(self.led_pin, GPIO.LOW)
 
-        before_breakfast = "02:43:00"
-        after_breakfast = "02:02:30"
-        before_lunch = "12:55:50"
-        after_lunch = "12:56:00"
-        before_dinner = "12:56:10"
-        after_dinner = "12:56:20"
-        before_sleep = "12:56:30"
-
         # # Access meal times using the meal names
         # before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
         # after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
@@ -337,149 +329,149 @@ class MedicineDispenser:
                 
                 # beep_process = multiprocessing.Process(target=beep)
                 
-                if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
+                # if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
                     
-                    row, col, servoNum = self.load_state()
-                    while col < self.max_col:
-                        while row < self.max_row:  
-                            now = datetime.now()
-                            current_time = now.strftime("%H:%M:%S")
-                            current_day = now.strftime("%A")  # Get the current day of the week
-                            print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
+                row, col, servoNum = self.load_state()
+                while col < self.max_col:
+                    while row < self.max_row:  
+                        now = datetime.now()
+                        current_time = now.strftime("%H:%M:%S")
+                        current_day = now.strftime("%A")  # Get the current day of the week
+                        print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
+                        
+                        
+                        # if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
                             
+                            # pwm.set_pwm(servoNum + 1, 0, servo_min)         #เซอร์โวตัวหลัง
+                            # time.sleep(2)
                             
-                            if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
+                            # pwm.set_pwm(servoNum, 0, servo_min)             #เซอร์โวตัวหน้า
+                            # time.sleep(2)
+                            # pwm.set_pwm(servoNum, 0, servo_max)
+                            # time.sleep(1)
+                            
+                            # pwm.set_pwm(servoNum + 1, 0, servo_max)
+                            # time.sleep(2)
+                                                                
+                        row += 1
+                        
+                        self.play_recieve_drug_audio()
+                        
+                        # Line
+                        start_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
+                        notify_time = 1                     # จำนวนครั้งการแจ้งเตือนไลน์
+                        notify_second = 30                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
+                        max_replay_notify = 3               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
+                        
+                        # ไฟล์เสียง beep
+                        audio_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะการเล่นไฟล์เสียง
+                        audio_play = 3                      # เล่นไฟล์ใน 3 วินาที
+                        
+                        # ระยะจากคนและกล่องจ่ายยา (cm)
+                        range_user = 15                     # ระยะจากผู้ใช้กับตัวกล่องยา
+                        
+                        # LED
+                        # start_led_time = time.time()
+                        # led_play = 3
+                        
+                        beep_process = multiprocessing.Process(target=self.beep)
+                        
+                        # # led_blink_process = multiprocessing.Process(target=led_blink)
+                        led_blink_process = multiprocessing.Process(target=self.led_blink)
+                        led_blink_process.start
+                        
+                        get_drug = False
+                        while True:
+                            
+                            # beep_process.join()
+                            
+                            dist1 = self.distance()
+                            time.sleep(0.2)
+                            dist2 = self.distance()
+                            time.sleep(0.2)
+                            
+                            print ("Measured Distance 1 = %.1f cm" % dist1)
+                            print ("Measured Distance 2 = %.1f cm" % dist2)
+                            self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
+                            
+                            self.led_blink()
+                            
+                            # if time.time() - start_led_time <= led_play and not get_drug:
                                 
-                                # pwm.set_pwm(servoNum + 1, 0, servo_min)         #เซอร์โวตัวหลัง
-                                # time.sleep(2)
+                            #     start_led_time = time.time()
                                 
-                                # pwm.set_pwm(servoNum, 0, servo_min)             #เซอร์โวตัวหน้า
+                            
+                            # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
+                            if time.time() - audio_time >= audio_play and not get_drug:
+                                beep_process = multiprocessing.Process(target=self.beep)
+                                beep_process.start()
+                                # beep_audio()
+                                audio_time = time.time()
+                                
+                            
+                            if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
+                                get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                                                
+                            
+                            # เงื่อนไขการแจ้งเตือนซ้ำ
+                            if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
+                                print(time.time)
+                                print(start_time)
+                                self.wait_receive_line(channel_access_token, notify_time)
+                                notify_time += 1
+                                                    
+                                start_time = time.time()
+                            
+                            # เงื่อนไขไม่มารีบยา
+                            if time.time() - start_time >= notify_second and notify_time == max_replay_notify:
+                                self.wait_receive_line(channel_access_token, notify_time)
+                                time.sleep(3)
+                                print("ผู้สูงอายุไม่มารับยา")
+                                # count_audio = 0
+                                notify_time = 1
+                                
+                                # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                 # time.sleep(2)
-                                # pwm.set_pwm(servoNum, 0, servo_max)
+                                # pwm.set_pwm(15, 0, servo_max)
                                 # time.sleep(1)
                                 
-                                # pwm.set_pwm(servoNum + 1, 0, servo_max)
-                                # time.sleep(2)
-                                                                    
-                                row += 1
+                                self.not_receive_line(channel_access_token)
                                 
-                                self.play_recieve_drug_audio()
+                                break
+                            
+                            # เงื่อนไขถ้ามารับยา
+                            if get_drug:
+                                print("ผู้สูงอายุมารับยาแล้ว")
+                                beep_process.join()
+                                # led_blink_process.join()
+                                                                
+                                capture_image_process = multiprocessing.Process(target=self.capture_image)
+                                capture_image_process.start()
+                                capture_image_process.join()
                                 
-                                # Line
-                                start_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
-                                notify_time = 1                     # จำนวนครั้งการแจ้งเตือนไลน์
-                                notify_second = 30                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
-                                max_replay_notify = 3               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
+                                self.send_image_to_line(image_url, channel_access_token)
                                 
-                                # ไฟล์เสียง beep
-                                audio_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะการเล่นไฟล์เสียง
-                                audio_play = 3                      # เล่นไฟล์ใน 3 วินาที
+                                # time.sleep(60)              # ใช้เมื่อเวลาไม่ใช่ %H:%M:%S แต่เป็น %H:%M
                                 
-                                # ระยะจากคนและกล่องจ่ายยา (cm)
-                                range_user = 15                     # ระยะจากผู้ใช้กับตัวกล่องยา
-                                
-                                # LED
-                                # start_led_time = time.time()
-                                # led_play = 3
-                                
-                                beep_process = multiprocessing.Process(target=self.beep)
-                                
-                                # # led_blink_process = multiprocessing.Process(target=led_blink)
-                                led_blink_process = multiprocessing.Process(target=self.led_blink)
-                                led_blink_process.start
-                                
-                                get_drug = False
-                                while True:
-                                    
-                                    # beep_process.join()
-                                    
-                                    dist1 = self.distance()
-                                    time.sleep(0.2)
-                                    dist2 = self.distance()
-                                    time.sleep(0.2)
-                                    
-                                    print ("Measured Distance 1 = %.1f cm" % dist1)
-                                    print ("Measured Distance 2 = %.1f cm" % dist2)
-                                    self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
-                                    
-                                    self.led_blink()
-                                    
-                                    # if time.time() - start_led_time <= led_play and not get_drug:
-                                        
-                                    #     start_led_time = time.time()
-                                        
-                                    
-                                    # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
-                                    if time.time() - audio_time >= audio_play and not get_drug:
-                                        beep_process = multiprocessing.Process(target=self.beep)
-                                        beep_process.start()
-                                        # beep_audio()
-                                        audio_time = time.time()
-                                        
-                                    
-                                    if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                        get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
-                                                                        
-                                    
-                                    # เงื่อนไขการแจ้งเตือนซ้ำ
-                                    if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
-                                        print(time.time)
-                                        print(start_time)
-                                        self.wait_receive_line(channel_access_token, notify_time)
-                                        notify_time += 1
-                                                            
-                                        start_time = time.time()
-                                    
-                                    # เงื่อนไขไม่มารีบยา
-                                    if time.time() - start_time >= notify_second and notify_time == max_replay_notify:
-                                        self.wait_receive_line(channel_access_token, notify_time)
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา")
-                                        # count_audio = 0
-                                        notify_time = 1
-                                        
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
-                                        
-                                        self.not_receive_line(channel_access_token)
-                                        
-                                        break
-                                    
-                                    # เงื่อนไขถ้ามารับยา
-                                    if get_drug:
-                                        print("ผู้สูงอายุมารับยาแล้ว")
-                                        beep_process.join()
-                                        # led_blink_process.join()
-                                                                        
-                                        capture_image_process = multiprocessing.Process(target=self.capture_image)
-                                        capture_image_process.start()
-                                        capture_image_process.join()
-                                        
-                                        self.send_image_to_line(image_url, channel_access_token)
-                                        
-                                        # time.sleep(60)              # ใช้เมื่อเวลาไม่ใช่ %H:%M:%S แต่เป็น %H:%M
-                                        
-                                        break
-                                    
-                                if not row == self.max_row:
-                                    self.save_state(row, col, servoNum)  # Save the current state
-                                
-                                time.sleep(1)
-                                
-                        # เพิ่มเงื่อนไขที่ถ้า row = 3 ให้กลับไปที่ 0
-                        if row == self.max_row:
-                            row = 0
-                        col += 1
-                        servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปคอลัมน์ถัดไป
-                        if not col == self.max_col:
+                                break
+                            
+                        if not row == self.max_row:
                             self.save_state(row, col, servoNum)  # Save the current state
                         
-                    col = 0
-                    servoNum = 0
-                    self.save_state(row, col, servoNum)  # Save the current state
+                        time.sleep(1)
+                            
+                    # เพิ่มเงื่อนไขที่ถ้า row = 3 ให้กลับไปที่ 0
+                    if row == self.max_row:
+                        row = 0
+                    col += 1
+                    servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปคอลัมน์ถัดไป
+                    if not col == self.max_col:
+                        self.save_state(row, col, servoNum)  # Save the current state
                     
+                col = 0
+                servoNum = 0
+                self.save_state(row, col, servoNum)  # Save the current state
+                
                                 
                 time.sleep(1)  # Check the time every second
                 
