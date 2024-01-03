@@ -318,8 +318,8 @@ class MedicineDispenser:
         ad_not_receive = False
         bbed_not_receive = False
 
-        before_breakfast = "05:03:00"
-        after_breakfast = "05:08:30"
+        before_breakfast = "05:35:00"
+        after_breakfast = "05:40:30"
         before_lunch = "06:56:00"
         after_lunch = "07:01:30"
         before_dinner = "12:56:10"
@@ -521,10 +521,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อก่อนนอน")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token)
                                         bbed_not_receive = True                     
                                         break
@@ -533,10 +533,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเช้า ก่อนอาหาร")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token)
                                         bb_not_receive = True                            
                                         break
@@ -545,10 +545,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเช้า หลังอาหาร")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token)
                                         ab_not_receive = True                                  
                                         break
@@ -557,10 +557,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเที่ยง ก่อนอาหาร")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token)  
                                         bl_not_receive = True                               
                                         break
@@ -569,10 +569,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเที่ยง หลังอาหาร")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token)
                                         al_not_receive = True                                 
                                         break
@@ -581,10 +581,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเย็น ก่อนอาหาร")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token)
                                         bd_not_receive = True                                 
                                         break
@@ -593,10 +593,10 @@ class MedicineDispenser:
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเย็น ก่อนอาหาร")
                                         notify_time = 1
-                                        # pwm.set_pwm(15, 0, servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # pwm.set_pwm(15, 0, servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         self.not_receive_line(channel_access_token) 
                                         bd_not_receive = True                             
                                         break
