@@ -14,7 +14,6 @@ import os
 import Adafruit_PCA9685
 import subprocess
 import threading
-# from playsound import playsound
 import requests
 import pygame
 
@@ -44,8 +43,6 @@ class SensorThread(QObject):
         # #et GPIO Pins LED
         self.led_pin = 16
         
-        
-
         #set GPIO direction (IN / OUT)
         GPIO.setup(self.GPIO_TRIGGER, GPIO.OUT)
         GPIO.setup(self.GPIO_ECHO, GPIO.IN)
@@ -59,6 +56,7 @@ class SensorThread(QObject):
         self.max_col = 7
         self.max_row = 5
         self.distance_value = 999999999             # สร้างค่าคงที่ของระยะอัลตร้าโซนิคเริ่มต้น
+        self.all_drug_empty = False
         
         self.beep_event = threading.Event()             # สร้าง Event สำหรับการมารับยา
         self.distance_event = threading.Event()
@@ -102,10 +100,8 @@ class SensorThread(QObject):
                 # and divide by 2, because there and back
                 self.distance_value = (TimeElapsed * 34300) / 2
                 
-                print("Measured Distance = %.1f cm" % self.distance_value)
-                time.sleep(0.2)
-        # else:
-        #     time.sleep(1)
+                # print("Measured Distance = %.1f cm" % self.distance_value)
+                time.sleep(1)
 
     ########################## สำหรับ PIR Sensor ############################
 
@@ -113,9 +109,10 @@ class SensorThread(QObject):
         while self.is_running:
             if self.motion_detect_event.is_set():
                 if GPIO.input(self.GPIO_PIR):              # Check whether pir is HIGH
-                    print("Motion Detected!")
+                    # print("Motion Detected!")
+                    pass
                 else:
-                    print("No Motion Detected!")
+                    # print("No Motion Detected!")
                     pass
             else:
                 time.sleep(1)
@@ -461,7 +458,6 @@ class SensorThread(QObject):
             "Content-Type": "application/json",
             "Authorization": "Bearer " + channel_access_token,
         }
-
         data = {
             "messages": [
                 {
@@ -556,8 +552,6 @@ class SensorThread(QObject):
         after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
         before_sleep = meal_times.get("มื้อก่อนนอน", "")
         
-        # print(meal_times)
-        
         if not before_breakfast == "":
             before_breakfast_seconds = time_to_seconds(before_breakfast)
             before_breakfast_time = True
@@ -580,7 +574,7 @@ class SensorThread(QObject):
             before_sleep_seconds = time_to_seconds(before_sleep)
             before_sleep_time = True
         
-        # รัน Process แบบ Multiprocessing    
+        # รัน Process แบบ Multithread   
         web_server_thread = threading.Thread(target=self.server)
         # รัน web_server
         web_server_thread.start()
@@ -601,10 +595,13 @@ class SensorThread(QObject):
         
         try:
             while True:
+                self.all_drug_empty = False
                 self.get_prepare = self.load_prepare_state()
-                # print(self.get_prepare)
-                if self.get_prepare:
-                    #################################################################################################################
+                while self.get_prepare:
+                    
+                    if self.all_drug_empty:
+                        break
+                    
                     meal_times = self.load_meal_times_from_database()
                     meal_drug_list = self.load_meal_drug_list()
                     
@@ -614,16 +611,10 @@ class SensorThread(QObject):
                     for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
                         if check_col == cur_col and check_row == cur_row:
                             selected_items.append((check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time))
-                    # print(selected_items)
                     
                     cur_meal_name = selected_items[-1][5]
                     cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
-                    
-                    # print(f"cur_meal_name: {cur_meal_name}")
-                    # print(f"cur_meal_time: {cur_meal_time}")
-                    # print("=============")    
-                    ###############################################################################################################
-                    # Access meal times using the meal names
+
                     before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
                     after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
                     before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
@@ -654,10 +645,8 @@ class SensorThread(QObject):
                         before_sleep_seconds = time_to_seconds(before_sleep)
                         before_sleep_time = True
             
-                    # Move servo on channel O between extremes.
                     now = datetime.now()
                     current_time = now.strftime("%H:%M:%S")
-                    # print(f"ขณะนี้เวลา: {current_time}")
                     
                     if current_time == cur_meal_time:                           # แก้ cur_meal_time
                         meal_seconds = time_to_seconds(current_time)
@@ -675,12 +664,9 @@ class SensorThread(QObject):
                                 cur_meal_name = selected_items[-1][5]
                                 cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
                                 
-                                # print(f"cur_meal_name: {cur_meal_name}")
-                                # print(f"cur_meal_time: {cur_meal_time}")
-                                
                                 meal_times = self.load_meal_times_from_database()
             
-                                # Access meal times using the meal names
+                                # เข้าถึง meal times โดยใช้ชื่อมื้อ
                                 before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
                                 after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
                                 before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
@@ -713,7 +699,6 @@ class SensorThread(QObject):
                                 
                                 now = datetime.now()
                                 current_time = now.strftime("%H:%M:%S")
-                                # print(f"ขณะนี้เวลา: {current_time}")
                                 
                                 if current_time == cur_meal_time:
                                     self.save_notify_state(True)
@@ -733,24 +718,22 @@ class SensorThread(QObject):
                                     self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
                                     time.sleep(1)
                                     
-                                    
-                                    col += 1
-                                    ####################################################################################
-                                    
-                                    # print(f"cur_row: {cur_row}")
-                                    # print(f"cur_col: {cur_col}")
                                     connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
                                     cursor = connection.cursor()
-                                                                   
-                                    for check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+                                                                    
+                                    for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+                                        print(f"{check_row} == {cur_row}")
+                                        print(f"{check_col} == {cur_col}")
+                                        print("----------------")
                                         if check_row == cur_row and check_col == cur_col:
                                             query = f'''
                                                 SELECT drug_remaining, drug_remaining_meal, internal_drug, drug_eat
                                                     FROM Drug
                                                     WHERE drug_id = {drug_id}
                                                 '''
-                                            cursor.execute(query)   
+                                            cursor.execute(query)
                                             drug_info_list = cursor.fetchall()
+                                            print("drug_info_list")
                                             if drug_info_list:
                                                 drug_remaining, drug_remaining_meal, internal_drug, drug_eat = drug_info_list[0]
                                                 internal_drug -= 1
@@ -765,7 +748,8 @@ class SensorThread(QObject):
                                                     '''
                                                 cursor.execute(update_query)
                                                 connection.commit()
-                                    # print(selected_items)
+                                                
+                                    col += 1
                                     
                                     for i, item in enumerate(meal_drug_list):
                                         if item[0] == cur_col and item[1] == cur_row:
@@ -798,17 +782,14 @@ class SensorThread(QObject):
                                         self.fg_bb()
                                     elif ab_not_receive:
                                         print("ท่านลืมกินยามื้อ (เช้าหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (ส้ม) ในช่อง ยาลืมกิน")      #2
-                                        time.sleep(10)
                                         ab_not_receive = False
                                         self.fg_ab()
                                     elif bl_not_receive:
                                         print("ท่านลืมกินยามื้อ (เที่ยงก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (เหลือง) ในช่อง ยาลืมกิน")  #3
-                                        time.sleep(10)
                                         bl_not_receive = False
                                         self.fg_bl()
                                     elif al_not_receive:
                                         print("ท่านลืมกินยามื้อ (เที่ยงหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (เขียวอ่อน) ในช่อง ยาลืมกิน")    #4
-                                        time.sleep(10)
                                         al_not_receive = False
                                         self.fg_al()
                                     elif bd_not_receive:
@@ -826,7 +807,7 @@ class SensorThread(QObject):
                                     
                                     # Line
                                     start_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
-                                    notify_time = 1                     # จำนวนครั้งการแจ้งเตือนไลน์
+                                    notify_time = 1                     # ตัวแปรเริ่มต้นแจ้งเตือนไลน์
                                     notify_second = 300                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
                                     max_replay_notify = 4               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
                                     
@@ -843,51 +824,18 @@ class SensorThread(QObject):
                                         
                                         self.led_blink()
                                         
-                                        # if time.time() - start_led_time <= led_play and not get_drug:
-                                            
-                                        #     start_led_time = time.time()
-                                            
-                                        # print(f"time.time(): {time.time()}")
-                                        # print(f"audio_time: {audio_time}")
-                                        # print(f"audio_play: {audio_play}")
-                                        # print(f"time.time() - audio_time: {time.time() - audio_time}")
-                                        # print("======================")
-                                        
-                                        # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
                                         if not get_drug:
-                                            self.beep_event.set()
-                                            
-                                        
-                                        # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
-                                        #     get_drug = True                                                          
+                                            self.beep_event.set()                                                         
                                         
                                         if self.distance_value < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะและใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
-                                            get_drug = True                                                                                              
-                                        
-                                        # if GPIO.input(self.GPIO_PIR):          # motion เซนเซอร์ detect
-                                        #     get_drug = True   
+                                            get_drug = True                                                                                               
                                         
                                         # เงื่อนไขการแจ้งเตือนซ้ำ
                                         if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
-                                            # print(time.time)
-                                            # print(start_time)
                                             self.wait_receive_line(self.channel_access_token, notify_time)
                                             notify_time += 1
                                                                 
                                             start_time = time.time()
-                                        
-                                        # เงื่อนไขไม่มารีบยา
-                                        # if time.time() - start_time >= notify_second and notify_time == max_replay_notify:
-                                        
-                                        
-                                        # if current_time >= after_breakfast_seconds - (5 * 60) and current_time <= after_breakfast_seconds and current_time_tmp != after_breakfast_seconds:
-                                        # print("=======================")
-                                        # print(self.meal_seconds >= after_lunch_seconds - (5 * 60))
-                                        # print(self.meal_seconds <= after_lunch_seconds)
-                                        # print(meal_seconds != after_lunch_seconds)
-                                        # print(after_lunch_time)
-                                        # print(self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds and after_lunch_time)
-                                        # print("=======================")
                                         
                                         if self.meal_seconds >= before_breakfast_seconds - (5 * 60) and self.meal_seconds <= before_breakfast_seconds and meal_seconds != before_breakfast_seconds and before_breakfast_time:
                                             time.sleep(3)
@@ -1009,7 +957,7 @@ class SensorThread(QObject):
                                             self.distance_event.clear()
                                             self.motion_detect_event.clear()
                                             self.beep_event.clear()
-                                                                  
+                                                                    
                                             stay_in_loop = False
                                             self.save_main_state(True)
                                         # เงื่อนไขถ้ามารับยา
@@ -1019,7 +967,7 @@ class SensorThread(QObject):
                                             self.distance_event.clear()
                                             self.motion_detect_event.clear()
                                             self.beep_event.clear()
-                                                                                                             
+                                                                                                                
                                             capture_image_thread = threading.Thread(target=self.capture_image)
                                             capture_image_thread.start()
                                             capture_image_thread.join()
@@ -1028,54 +976,52 @@ class SensorThread(QObject):
                                             
                                             stay_in_loop = False
                                             self.save_main_state(True)
+                                            
+                                            # print(meal_drug_list[-1][0])
+                                            # print(meal_drug_list[-1][1])
+                                        
                                         if not col == self.max_col:    
                                             if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
-                                                self.save_state(col, row, servoNum)  # Save the current state   
+                                                self.save_state(col, row, servoNum)  # Save the current state
+                                                print("h")   
                                             
-                                            # print("----------------------")
-                                            # print(f"col:{cur_col}")
-                                            # print(f"row:{cur_row}")
-                                            # print("----------------------")
-                                            # print(f"col_list:{meal_drug_list[-1][1]}")
-                                            # print(f"row_list:{meal_drug_list[-1][0]}")
-                                            
-                                            elif cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
-                                                
+                                            if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:     
                                                 self.save_state(0,0,0)
-                                                # print("hi")
-                                                self.save_prepare_state(False) 
-                                    
+                                                self.save_prepare_state(False)
+                                                print("e")
+                                                self.all_drug_empty = True
+                                
+                                if self.all_drug_empty:
+                                    break
+                                                
                             # เพิ่มเงื่อนไขที่ถ้า col = 3 ให้กลับไปที่ 0
                             if col == self.max_col:
                                 col = 0
                                                 
                             row += 1
-                            servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปแถวถัดไป
+                            servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปแถวถัดไป      
                             
                             if not row == self.max_row:
                                 if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                                     self.save_state(col, row, servoNum)  # Save the current state
+                                    print("l")
                                 
-                                if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
+                                elif cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
                                     self.save_state(0,0,0)
-                                    # print("hi")
-                                    self.save_prepare_state(False) 
+                                    self.save_prepare_state(False)
+                                    print("ll")
                             
                         row = 0
                         servoNum = 0
-                        # print(cur_col)
-                        # print(meal_drug_list[-1][1])
-                        # print("=============")
-                        # print(cur_row)
-                        # print(meal_drug_list[-1][0])
+                        
                         if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                             self.save_state(col, row, servoNum)  # Save the current state
-                            # print("hi")
+                            print("o")
                         
                         if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
                             self.save_state(0,0,0)
-                            # print("hi")
-                            self.save_prepare_state(False) 
+                            self.save_prepare_state(False)
+                            print("!")
         
         except KeyboardInterrupt:
             print("\nถูกหยุดการทำงานโดยผู้ใช้")
@@ -1089,14 +1035,8 @@ class SensorThread(QObject):
         
     def run_thread(self):
         self.thread = QThread()
-        self.sensor_thread = SensorThread()
-        
-        # self.moveToThread(self.thread)    
+        self.sensor_thread = SensorThread()  
         self.sensor_thread.moveToThread(self.thread)
-        # self.thread.started.connect(self.run)
         self.thread.started.connect(self.sensor_thread.run)
-        
-        self.sensor_thread.finished.connect(self.thread.quit)
-        # self.sensor_thread.finished.connect(self.sensor_thread.deleteLater)
-        # self.thread.finished.connect(self.thread.deleteLater)    
+        self.sensor_thread.finished.connect(self.thread.quit)   
         self.thread.start()

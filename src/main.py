@@ -4,27 +4,14 @@ from Utils import *
 from UI_Generate import *
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QLabel
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, QTimer, QLocale
-from PyQt5.QtCore import Qt
-
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect
+from PyQt5.QtCore import QTimer, QLocale
 import sys
-import time
-import RPi.GPIO as GPIO
-
 from datetime import datetime
 import os
-import Adafruit_PCA9685
-import subprocess
-import threading
-# from playsound import playsound
-import requests
-import pygame
-
 
 from drug_List import Ui_drug_List
 from select_time import Ui_select_time
-# from pack_med import Ui_med_pack
 from pack import Ui_med_pack
 from sortDrug import Ui_sortDrug
 from drugTotal import Ui_drugTotal
@@ -105,7 +92,6 @@ class Ui_Medicine_App(object):
         data_checkui3_instance.Set(None)
         meal_label_instance.Set(None)
         wifi_name_instance.Set(None)
-
         
         UI_instance.Set(Medicine_App)
         show_widget_fullscreen(Medicine_App)
@@ -557,7 +543,6 @@ if __name__ == "__main__":
     Medicine_App = QtWidgets.QMainWindow()
     ui = Ui_Medicine_App()
     ui.setupUi(Medicine_App)
-    # Set the locale to English
     english_locale = QLocale(QLocale.English)
     QLocale.setDefault(english_locale)
     Medicine_App.show()
