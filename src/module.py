@@ -53,6 +53,7 @@ class SensorThread(QObject):
         self.pwm = Adafruit_PCA9685.PCA9685()
         self.servo_min = 150
         self.servo_max = 600
+        self.servo_drop = 350
         self.max_col = 7
         self.max_row = 5
         self.distance_value = 999999999             # สร้างค่าคงที่ของระยะอัลตร้าโซนิคเริ่มต้น
@@ -841,7 +842,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
@@ -858,7 +859,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
@@ -875,7 +876,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
@@ -893,7 +894,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
@@ -911,7 +912,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
@@ -929,7 +930,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
@@ -947,7 +948,7 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
                                             time.sleep(2)
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
