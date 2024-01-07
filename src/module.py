@@ -43,6 +43,8 @@ class SensorThread(QObject):
 
         # #et GPIO Pins LED
         self.led_pin = 16
+        
+        
 
         #set GPIO direction (IN / OUT)
         GPIO.setup(self.GPIO_TRIGGER, GPIO.OUT)
@@ -50,11 +52,17 @@ class SensorThread(QObject):
         GPIO.setup(self.GPIO_PIR, GPIO.IN)
         GPIO.setup(self.led_pin, GPIO.OUT)
         
+        self.is_running = True
         self.pwm = Adafruit_PCA9685.PCA9685()
         self.servo_min = 150
         self.servo_max = 600
         self.max_col = 7
         self.max_row = 5
+        self.distance_value = 999999999             # สร้างค่าคงที่ของระยะอัลตร้าโซนิคเริ่มต้น
+        
+        self.beep_event = threading.Event()             # สร้าง Event สำหรับการมารับยา
+        self.distance_event = threading.Event()
+        self.motion_detect_event = threading.Event()     
         
         self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
         self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
@@ -68,33 +76,49 @@ class SensorThread(QObject):
     ####################### สำหรับ Ultrasonic Sensor ########################
 
     def distance(self):
-        # set Trigger to HIGH
-        GPIO.output(self.GPIO_TRIGGER, True)
-    
-        # set Trigger after 0.01ms to LOW
-        time.sleep(0.00001)
-        GPIO.output(self.GPIO_TRIGGER, False)
-    
-        StartTime = time.time()
-        StopTime = time.time()
-    
-        # save StartTime
-        while GPIO.input(self.GPIO_ECHO) == 0:
-            StartTime = time.time()
-    
-        # save time of arrival
-        while GPIO.input(self.GPIO_ECHO) == 1:
-            StopTime = time.time()
-    
-        # time difference between start and arrival
-        TimeElapsed = StopTime - StartTime
-        # multiply with the sonic speed (34300 cm/s)
-        # and divide by 2, because there and back
-        distance = (TimeElapsed * 34300) / 2
-    
-        return distance
+        while self.is_running:
+            if self.distance_event.is_set():
+                # set Trigger to HIGH
+                GPIO.output(self.GPIO_TRIGGER, True)
+            
+                # set Trigger after 0.01ms to LOW
+                time.sleep(0.00001)
+                GPIO.output(self.GPIO_TRIGGER, False)
+            
+                StartTime = time.time()
+                StopTime = time.time()
+            
+                # save StartTime
+                while GPIO.input(self.GPIO_ECHO) == 0:
+                    StartTime = time.time()
+            
+                # save time of arrival
+                while GPIO.input(self.GPIO_ECHO) == 1:
+                    StopTime = time.time()
+            
+                # time difference between start and arrival
+                TimeElapsed = StopTime - StartTime
+                # multiply with the sonic speed (34300 cm/s)
+                # and divide by 2, because there and back
+                self.distance_value = (TimeElapsed * 34300) / 2
+                
+                print("Measured Distance = %.1f cm" % self.distance_value)
+                time.sleep(0.2)
+        # else:
+        #     time.sleep(1)
 
-    ########################################################################
+    ########################## สำหรับ PIR Sensor ############################
+
+    def motion_detect(self):
+        while self.is_running:
+            if self.motion_detect_event.is_set():
+                if GPIO.input(self.GPIO_PIR):              # Check whether pir is HIGH
+                    print("Motion Detected!")
+                else:
+                    print("No Motion Detected!")
+                    pass
+            else:
+                time.sleep(1)
 
     ########################## สำหรับ Servo Motor ###########################
     # Initialise the PCA9685 using the default address (0x40).
@@ -177,24 +201,29 @@ class SensorThread(QObject):
         pygame.quit()
         
     def beep_audio(self):
-        # Initialize Pygame
-        pygame.init()
-        clock = pygame.time.Clock()
+        while self.is_running:
+            if self.beep_event.is_set():
+                    # Initialize Pygame
+                    pygame.init()
+                    clock = pygame.time.Clock()
 
-        # Set the duration to 1 minute (60,000 milliseconds)
+                    # Set the duration to 1 minute (60,000 milliseconds)
 
-        pygame.mixer.init()
-        pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/beep.mp3")
-        pygame.mixer.music.play()
-        # time.sleep(3)
+                    pygame.mixer.init()
+                    pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/beep.mp3")
+                    pygame.mixer.music.play()
+                    # time.sleep(3)
 
-        # Wait for the sound to finish playing
-        while pygame.mixer.music.get_busy():
-            clock.tick(1)
+                    # Wait for the sound to finish playing
+                    while pygame.mixer.music.get_busy():
+                        clock.tick(1)
 
-        # Clean up Pygame
-        pygame.mixer.quit()
-        pygame.quit()
+                    # Clean up Pygame
+                    pygame.mixer.quit()
+                    pygame.quit()
+            else:
+                time.sleep(1)
+            time.sleep(1)
         
 
     def fg_bb(self):
@@ -354,16 +383,6 @@ class SensorThread(QObject):
     def capture_image(self):
         subprocess.run(["/home/pi/Documents/Medicine_notify/src/capture_image.sh"])
 
-    ########################## สำหรับ PIR Sensor ############################
-
-    def motion_detect(self):
-        # print("Waiting for sensor to settle")
-        
-        if GPIO.input(self.GPIO_PIR):              # Check whether pir is HIGH
-            print("Motion Detected!")
-        else:
-            print("No Motion Detected!")
-            pass
 
     ############################ LED #######################################
 
@@ -572,6 +591,13 @@ class SensorThread(QObject):
         self.channel_access_token = "HwJayMU6DtjzE/XyRwAtW6sTVuxbYWuR9oK9OqMvJHxfoBg7Skje0j3OOlp/XjKGLPJDjimOjy+F1EnsX+uVBtXpEFXBbdpls4wVo7tPa//yKWPUmet+pIaQ3o4mbrItzl1GR4e+lQvZJGM0trCeWgdB04t89/1O/w1cDnyilFU="
 
         # self.send_request_with_header(self.ngrok_url, 'ngrok-skip-browser-warning', 'true')       # ให้ skip หน้าเว็บ warning
+        self.distance_thread = threading.Thread(target=self.distance)
+        self.motion_thread = threading.Thread(target=self.motion_detect)
+        self.audio_thread = threading.Thread(target=self.beep_audio)
+        
+        self.distance_thread.start()
+        self.motion_thread.start()
+        self.audio_thread.start()
         
         try:
             while True:
@@ -805,16 +831,15 @@ class SensorThread(QObject):
                                     max_replay_notify = 4               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
                                     
                                     # ระยะจากคนและกล่องจ่ายยา (cm)
-                                    range_user = 80                     # ระยะจากผู้ใช้กับตัวกล่องยา
+                                    range_user = 60                     # ระยะจากผู้ใช้กับตัวกล่องยา
                                     
                                     get_drug = False
                                     stay_in_loop = True
-                                    while stay_in_loop:           
-                                        dist1 = self.distance()
+                                    while stay_in_loop:
+
+                                        self.distance_event.set()
                                         
-                                        print ("Measured Distance = %.1f cm" % dist1)
-                                        # print ("Measured Distance 2 = %.1f cm" % dist2)
-                                        self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
+                                        self.motion_detect_event.set()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
                                         
                                         self.led_blink()
                                         
@@ -830,13 +855,13 @@ class SensorThread(QObject):
                                         
                                         # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
                                         if not get_drug:
-                                            self.beep_audio()
+                                            self.beep_event.set()
                                             
                                         
                                         # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
                                         #     get_drug = True                                                          
                                         
-                                        if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะและใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                        if self.distance_value < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะและใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
                                             get_drug = True                                                                                              
                                         
                                         # if GPIO.input(self.GPIO_PIR):          # motion เซนเซอร์ detect
@@ -875,6 +900,11 @@ class SensorThread(QObject):
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             bbed_not_receive = True                     
                                             stay_in_loop = False
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                            
                                             self.save_main_state(True)
                                         elif self.meal_seconds >= after_breakfast_seconds - (5 * 60) and self.meal_seconds <= after_breakfast_seconds and meal_seconds != after_breakfast_seconds and after_breakfast_time:
                                             time.sleep(3)
@@ -887,6 +917,11 @@ class SensorThread(QObject):
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             bb_not_receive = True                            
                                             stay_in_loop = False
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                            
                                             self.save_main_state(True)
                                         elif self.meal_seconds >= before_lunch_seconds - (5 * 60) and self.meal_seconds <= before_lunch_seconds and meal_seconds != before_lunch_seconds and before_lunch_time:
                                             time.sleep(3)
@@ -899,6 +934,11 @@ class SensorThread(QObject):
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             ab_not_receive = True                                  
                                             stay_in_loop = False
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                            
                                             self.save_main_state(True)
                                         elif self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds and after_lunch_time:
                                             
@@ -912,6 +952,11 @@ class SensorThread(QObject):
                                             self.not_receive_line(self.channel_access_token, meal_name)  
                                             bl_not_receive = True                               
                                             stay_in_loop = False
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                            
                                             self.save_main_state(True)
                                         elif self.meal_seconds >= before_dinner_seconds - (5 * 60) and self.meal_seconds <= before_dinner_seconds and meal_seconds != before_dinner_seconds and before_dinner_time:
                                             
@@ -925,6 +970,11 @@ class SensorThread(QObject):
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             al_not_receive = True                                 
                                             stay_in_loop = False
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                            
                                             self.save_main_state(True)
                                         elif self.meal_seconds >= after_dinner_seconds - (5 * 60) and self.meal_seconds <= after_dinner_seconds and meal_seconds != after_dinner_seconds and after_dinner_time:
                                             
@@ -938,6 +988,11 @@ class SensorThread(QObject):
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             bd_not_receive = True                                 
                                             stay_in_loop = False
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                            
                                             self.save_main_state(True)
                                         elif self.meal_seconds >= before_sleep_seconds - (5 * 60) and self.meal_seconds <= before_sleep_seconds and meal_seconds != before_sleep_seconds and before_sleep_time:
                                             
@@ -949,12 +1004,22 @@ class SensorThread(QObject):
                                             self.pwm.set_pwm(15, 0, self.servo_max)
                                             time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name) 
-                                            bd_not_receive = True                             
+                                            bd_not_receive = True       
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                                                  
                                             stay_in_loop = False
                                             self.save_main_state(True)
                                         # เงื่อนไขถ้ามารับยา
                                         if get_drug:
-                                            print("ผู้สูงอายุมารับยาแล้ว")                                                                        
+                                            print("ผู้สูงอายุมารับยาแล้ว")       
+                                            
+                                            self.distance_event.clear()
+                                            self.motion_detect_event.clear()
+                                            self.beep_event.clear()
+                                                                                                             
                                             capture_image_thread = threading.Thread(target=self.capture_image)
                                             capture_image_thread.start()
                                             capture_image_thread.join()
@@ -1025,10 +1090,11 @@ class SensorThread(QObject):
     def run_thread(self):
         self.thread = QThread()
         self.sensor_thread = SensorThread()
-            
+        
+        # self.moveToThread(self.thread)    
         self.sensor_thread.moveToThread(self.thread)
+        # self.thread.started.connect(self.run)
         self.thread.started.connect(self.sensor_thread.run)
-        # self.sensor_thread.current_time_signal.connect(self.handle_current_time_signal)
         
         self.sensor_thread.finished.connect(self.thread.quit)
         # self.sensor_thread.finished.connect(self.sensor_thread.deleteLater)

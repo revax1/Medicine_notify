@@ -564,14 +564,5 @@ if __name__ == "__main__":
     
     sensor_thread = SensorThread()
     sensor_thread.run_thread()
-    # sensor_thread.current_time_signal.connect(ui.handle_current_time_signal)
-    
-    # ui.timer = QTimer()
-    # ui.timer.timeout.connect(sensor_thread.send_signal_to_main)
-    # ui.timer.start(1)
-    
-    # timer = QTimer()
-    # timer.timeout.connect(sensor_thread.send_signal_to_main)
-    # timer.start(1)
 
     sys.exit(app.exec_())	
