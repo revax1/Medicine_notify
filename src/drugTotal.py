@@ -131,7 +131,7 @@ class Ui_drugTotal(object):
         connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         cursor.execute('''
-            SELECT drug_name, internal_drug, drug_remaining, drug_eat FROM Drug 
+            SELECT drug_name, internal_drug, drug_remaining_meal, drug_eat FROM Drug 
         ''')
 
         # Fetch all rows from the result set

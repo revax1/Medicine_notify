@@ -203,6 +203,7 @@ class Ui_wifi2(object):
         QtCore.QMetaObject.connectSlotsByName(wifi2)
 
         self.add_back_pushButton.clicked.connect(self.backpage)
+        self.next_pushButton.clicked.connect(self.connect_wifi)
 
          # Set up button press and release styling
         self.add_back_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.add_back_pushButton))
@@ -235,13 +236,13 @@ class Ui_wifi2(object):
         backpage_form = UI_Genarate()
         backpage_form.widgetSet(UI_instance.Get(), Ui_wifi)
         
-    def check_wifi_password(self, ssid, password):
-        cmd = f"sudo wpa_passphrase {ssid} {password} >> /etc/wpa_supplicant/wpa_supplicant.conf"
-        process = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if process.returncode == 0:
-            return True
-        else:
-            return False
+    # def check_wifi_password(self, ssid, password):
+    #     cmd = f"sudo wpa_passphrase {ssid} {password} >> /etc/wpa_supplicant/wpa_supplicant.conf"
+    #     process = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #     if process.returncode == 0:
+    #         return True
+    #     else:
+    #         return False
 
     def connect_wifi(self):
         ssid = self.label_2.text()  # Get the WiFi name from label_2
@@ -249,19 +250,24 @@ class Ui_wifi2(object):
         
         print(ssid)
         print(password)
-        #if self.check_wifi_password(ssid, password):
-        configure_wifi(ssid, password)  # Call the configure_wifi function to connect to WiFi
-        print("Password Correct")
+        # if self.check_wifi_password(ssid, password):
+        
+        # print(configure_wifi(ssid, password))  # Call the configure_wifi function to connect to WiFi
+        configure_wifi(ssid, password)
+        
+        # if :
             
-            # def backpage_to_main():
-            #     from main import Ui_Medicine_App
-            #     backpage_form = UI_Genarate()
-            #     backpage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
+            # print("Password Correct")
+            
+        def backpage_to_main():
+            from main import Ui_Medicine_App
+            backpage_form = UI_Genarate()
+            backpage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
                 
-            # backpage_to_main()
-        #else:
-        #    print("Password Incorrect")
-        #    QMessageBox.warning(self.centralwidget, "Incorrect Password", "รหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง")
+        backpage_to_main()
+        # else:
+        #     print("Password Incorrect")
+        #     QMessageBox.warning(self.centralwidget, "Incorrect Password", "รหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง")
         
     def retranslateUi(self, wifi2):
         _translate = QtCore.QCoreApplication.translate

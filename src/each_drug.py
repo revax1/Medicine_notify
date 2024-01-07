@@ -26,6 +26,8 @@ class Ui_each_drug(object):
         UI_instance.Set(each_drug)
         show_widget_fullscreen(each_drug)
         
+        self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
+        
         self.each_drug = each_drug
         self.drug_List = drug_list_instance.Get()
         
@@ -283,34 +285,10 @@ class Ui_each_drug(object):
         QtCore.QMetaObject.connectSlotsByName(each_drug)
 
         self.add_back_pushButton.clicked.connect(self.backpage)
-
+        self.delete_pushButton.clicked.connect(self.delete_drug)
         # self.next_pushButton.clicked.connect(self.open_each_drug2)
 
-        def delete_drug():
-            drug_name = drug_name_instance.Get()
-            
-            drug_name = self.label_2.toPlainText()  # รับชื่อยาจาก Label
-
-            # Use the custom message box
-            QMessageBox = CustomMessageBox()
-        
-            reply = QMessageBox.question(each_drug, 'ลบยา', f'คุณต้องการลบยา "{drug_name}" ใช่หรือไม่?',
-                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-
-            if reply == QtWidgets.QMessageBox.Yes:
-                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
-                cursor = connection.cursor()
-                cursor.execute("SELECT drug_id FROM Drug WHERE drug_name = ?", (drug_name,))
-                result = cursor.fetchone()
-                print(result)
-                cursor.execute("DELETE FROM Drug WHERE drug_name = ?", (drug_name,))
                 
-                cursor.execute("DELETE FROM Drug_handle WHERE drug_id = ?", result)
-                connection.commit()
-                connection.close()
-                self.backpage()  # ปิดหน้าต่างหลังจากลบเสร็จ
-        
-        self.delete_pushButton.clicked.connect(delete_drug)
 
         def save_changes():
             # ตรวจสอบข้อมูลที่ถูกแก้ไขและบันทึกลงฐานข้อมูลหรือตัวแปรที่เหมาะสม
@@ -335,6 +313,31 @@ class Ui_each_drug(object):
 
         self.next_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.next_pushButton))
         self.next_pushButton.released.connect(lambda: self.set_button_released_style(self.next_pushButton))
+
+    def delete_drug(self):
+        drug_name = drug_name_instance.Get()
+        
+        drug_name = self.label_2.toPlainText()  # รับชื่อยาจาก Label
+
+        # Use the custom message box
+        QMessageBox = CustomMessageBox()
+        
+        reply = QMessageBox.question(self.each_drug, 'ลบยา', f'คุณต้องการลบยา "{drug_name}" ใช่หรือไม่?',
+                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
+            cursor = connection.cursor()
+            cursor.execute("SELECT drug_id FROM Drug WHERE drug_name = ?", (drug_name,))
+            result = cursor.fetchone()
+            print(result)
+            cursor.execute("DELETE FROM Drug WHERE drug_name = ?", (drug_name,))
+            
+            cursor.execute("DELETE FROM Drug_handle WHERE drug_id = ?", result)
+            connection.commit()
+            connection.close()
+            self.save_prepare_state(False)
+            self.backpage()  # ปิดหน้าต่างหลังจากลบเสร็จ
 
 
     def set_button_pressed_style(self, button):
@@ -367,6 +370,11 @@ class Ui_each_drug(object):
         drug_ID_instance.Set(self.drug_id)
         each_drug2_form = UI_Genarate()
         each_drug2_form.widgetSet(UI_instance.Get(), Ui_each_drug2)
+        
+    def save_prepare_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.prepare_state_file, 'w') as f:
+            f.write(prepare_str)
 
     def set_drug_info(self, drug_name):
         connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")

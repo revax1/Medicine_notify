@@ -51,8 +51,8 @@ class SensorThread(QObject):
         GPIO.setup(self.led_pin, GPIO.OUT)
         
         self.pwm = Adafruit_PCA9685.PCA9685()
-        self.servo_min = 90
-        self.servo_max = 570
+        self.servo_min = 150
+        self.servo_max = 600
         self.max_col = 8
         self.max_row = 5
         
@@ -358,10 +358,9 @@ class SensorThread(QObject):
 
     def motion_detect(self):
         # print("Waiting for sensor to settle")
-
+        
         if GPIO.input(self.GPIO_PIR):              # Check whether pir is HIGH
             print("Motion Detected!")
-            pass
         else:
             print("No Motion Detected!")
             pass
@@ -650,8 +649,8 @@ class SensorThread(QObject):
                                 cur_meal_name = selected_items[-1][5]
                                 cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
                                 
-                                print(f"cur_meal_name: {cur_meal_name}")
-                                print(f"cur_meal_time: {cur_meal_time}")
+                                # print(f"cur_meal_name: {cur_meal_name}")
+                                # print(f"cur_meal_time: {cur_meal_time}")
                                 
                                 meal_times = self.load_meal_times_from_database()
             
@@ -705,7 +704,7 @@ class SensorThread(QObject):
                                     
                                     self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
                                     time.sleep(2)
-                                    
+                                    col += 1
                                     ####################################################################################
                                     
                                     # print(f"cur_row: {cur_row}")
@@ -743,7 +742,7 @@ class SensorThread(QObject):
                                             meal_drug_list[i] = (item[0], item[1], item[2], item[3], item[4], item[5], item[6], 1)
                                     self.save_meal_drug_list(meal_drug_list)
                                     ####################################################################################                        
-                                    col += 1
+                                    
                                     
                                     if current_time == before_breakfast:
                                         meal_name = "มื้อเช้า ก่อนอาหาร"
@@ -801,24 +800,20 @@ class SensorThread(QObject):
                                     notify_second = 300                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
                                     max_replay_notify = 4               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
                                     
-                                    # ไฟล์เสียง beep
-                                    audio_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะการเล่นไฟล์เสียง
-                                    audio_play = 3                      # เล่นไฟล์ใน 3 วินาที
-                                    
                                     # ระยะจากคนและกล่องจ่ายยา (cm)
-                                    range_user = 50                     # ระยะจากผู้ใช้กับตัวกล่องยา
+                                    range_user = 80                     # ระยะจากผู้ใช้กับตัวกล่องยา
                                     
                                     get_drug = False
                                     stay_in_loop = True
                                     while stay_in_loop:           
                                         dist1 = self.distance()
-                                        time.sleep(0.005)
+                                        # time.sleep(0.005)
                                         # dist2 = self.distance()
                                         # time.sleep(0.005)
                                         
-                                        # print ("Measured Distance = %.1f cm" % dist1)
+                                        print ("Measured Distance = %.1f cm" % dist1)
                                         # print ("Measured Distance 2 = %.1f cm" % dist2)
-                                        # self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
+                                        self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
                                         
                                         
                                         # self.led_blink()
@@ -835,14 +830,11 @@ class SensorThread(QObject):
                                         # print("======================")
                                         
                                         # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
-                                        if time.time() - audio_time <= audio_play and not get_drug:
+                                        if not get_drug:
                                             # beep_process = multiprocessing.Process(target=self.beep)
                                             # print("beep ~ beep")
                                             # beep_process.start()        #9
                                             self.beep_audio()
-                                            
-                                            # start_led_time = time.time()
-                                            audio_time = time.time()
                                             
                                         
                                         # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
@@ -975,8 +967,8 @@ class SensorThread(QObject):
                                             
                                             stay_in_loop = False
                                             self.save_main_state(True)
-                                        if not col == self.max_col:
-                                            if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
+                                        if not col == self.max_col:    
+                                            if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                                                 self.save_state(col, row, servoNum)  # Save the current state   
                                             
                                             # print("----------------------")
@@ -985,8 +977,11 @@ class SensorThread(QObject):
                                             # print("----------------------")
                                             # print(f"col_list:{meal_drug_list[-1][1]}")
                                             # print(f"row_list:{meal_drug_list[-1][0]}")
-                                            if cur_col == meal_drug_list[-1][1] and cur_row == meal_drug_list[-1][0]:
+                                            
+                                            elif cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
+                                                
                                                 self.save_state(0,0,0)
+                                                # print("hi")
                                                 self.save_prepare_state(False) 
                                     
                             # เพิ่มเงื่อนไขที่ถ้า col = 3 ให้กลับไปที่ 0
@@ -997,20 +992,28 @@ class SensorThread(QObject):
                             servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปแถวถัดไป
                             
                             if not row == self.max_row:
-                                if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
+                                if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                                     self.save_state(col, row, servoNum)  # Save the current state
                                 
-                                if cur_col == meal_drug_list[-1][1] and cur_row == meal_drug_list[-1][0]:
+                                if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
                                     self.save_state(0,0,0)
+                                    # print("hi")
                                     self.save_prepare_state(False) 
                             
                         row = 0
                         servoNum = 0
-                        if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
+                        print(cur_col)
+                        print(meal_drug_list[-1][1])
+                        print("=============")
+                        print(cur_row)
+                        print(meal_drug_list[-1][0])
+                        if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                             self.save_state(col, row, servoNum)  # Save the current state
+                            print("hi")
                         
-                        if cur_col == meal_drug_list[-1][1] and cur_row == meal_drug_list[-1][0]:
+                        if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
                             self.save_state(0,0,0)
+                            # print("hi")
                             self.save_prepare_state(False) 
         
         except KeyboardInterrupt:
