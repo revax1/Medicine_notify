@@ -58,6 +58,8 @@ class SensorThread(QObject):
         self.max_row = 5
         self.distance_value = 999999999             # สร้างค่าคงที่ของระยะอัลตร้าโซนิคเริ่มต้น
         self.all_drug_empty = False
+        self.is_new_day = False
+        self.previous_day = datetime.now().date()
         
         self.beep_event = threading.Event()             # สร้าง Event สำหรับการมารับยา
         self.distance_event = threading.Event()
@@ -553,27 +555,44 @@ class SensorThread(QObject):
         after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
         before_sleep = meal_times.get("มื้อก่อนนอน", "")
         
+        time_flags = {
+            "before_breakfast_time": False,
+            "after_breakfast_time": False,
+            "before_lunch_time": False,
+            "after_lunch_time": False,
+            "before_dinner_time": False,
+            "after_dinner_time": False,
+            "before_sleep_time": False
+        }
+        
         if not before_breakfast == "":
             before_breakfast_seconds = time_to_seconds(before_breakfast)
             before_breakfast_time = True
+            time_flags["before_breakfast_time"] = True
         if not after_breakfast == "":    
             after_breakfast_seconds = time_to_seconds(after_breakfast)
             after_breakfast_time = True
+            time_flags["after_breakfast_time"] = True
         if not before_lunch == "":
             before_lunch_seconds = time_to_seconds(before_lunch)
             before_lunch_time = True
+            time_flags["before_lunch_time"] = True
         if not after_lunch == "":
             after_lunch_seconds = time_to_seconds(after_lunch)
             after_lunch_time = True
+            time_flags["after_lunch_time"] = True
         if not before_dinner == "":
             before_dinner_seconds = time_to_seconds(before_dinner)
             before_dinner_time = True
+            time_flags["before_dinner_time"] = True
         if not after_dinner == "":
             after_dinner_seconds = time_to_seconds(after_dinner)
             after_dinner_time = True
+            time_flags["after_dinner_time"] = True
         if not before_sleep == "":
             before_sleep_seconds = time_to_seconds(before_sleep)
             before_sleep_time = True
+            time_flags["before_sleep_time"] = True
         
         # รัน Process แบบ Multithread   
         web_server_thread = threading.Thread(target=self.server)
@@ -583,7 +602,7 @@ class SensorThread(QObject):
         # Channel Access Token และ URL ของไฟล์สำหรับเก็บรูปภาพใน Line
         self.ngrok_url = "https://secure-zebra-lately.ngrok-free.app/"
         self.image_url = "https://secure-zebra-lately.ngrok-free.app/image.jpg"
-        self.channel_access_token = "HwJayMU6DtjzE/XyRwAtW6sTVuxbYWuR9oK9OqMvJHxfoBg7Skje0j3OOlp/XjKGLPJDjimOjy+F1EnsX+uVBtXpEFXBbdpls4wVo7tPa//yKWPUmet+pIaQ3o4mbrItzl1GR4e+lQvZJGM0trCeWgdB04t89/1O/w1cDnyilFU="
+        self.channel_access_token = "7llX7K06pe0vyog2sWuF/5ool/qx2unEmFCz6ZVYSRYtH5rhkzAIIl5MWZEzXBeV9Xc2cKRzPqMbHGvrfjQDuO4ku98MgbPD8arM9MaJWm8M7RuoPJgavG/aQuJ+Tu5CsYNbSf/GkLPrtGLkFBV6YgdB04t89/1O/w1cDnyilFU="
 
         # self.send_request_with_header(self.ngrok_url, 'ngrok-skip-browser-warning', 'true')       # ให้ skip หน้าเว็บ warning
         self.distance_thread = threading.Thread(target=self.distance)
@@ -596,6 +615,11 @@ class SensorThread(QObject):
         
         try:
             while True:
+                
+                # cur_col, cur_row, servoNum = self.load_state()
+                # self.pwm.set_pwm(servoNum, 0, self.servo_max)      
+                # self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
+                
                 self.all_drug_empty = False
                 self.get_prepare = self.load_prepare_state()
                 while self.get_prepare:
@@ -624,27 +648,44 @@ class SensorThread(QObject):
                     after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
                     before_sleep = meal_times.get("มื้อก่อนนอน", "")
                     
+                    time_flags = {
+                        "before_breakfast_time": False,
+                        "after_breakfast_time": False,
+                        "before_lunch_time": False,
+                        "after_lunch_time": False,
+                        "before_dinner_time": False,
+                        "after_dinner_time": False,
+                        "before_sleep_time": False
+                    }
+                    
                     if not before_breakfast == "":
                         before_breakfast_seconds = time_to_seconds(before_breakfast)
                         before_breakfast_time = True
+                        time_flags["before_breakfast_time"] = True
                     if not after_breakfast == "":    
                         after_breakfast_seconds = time_to_seconds(after_breakfast)
                         after_breakfast_time = True
+                        time_flags["after_breakfast_time"] = True
                     if not before_lunch == "":
                         before_lunch_seconds = time_to_seconds(before_lunch)
                         before_lunch_time = True
+                        time_flags["before_lunch_time"] = True
                     if not after_lunch == "":
                         after_lunch_seconds = time_to_seconds(after_lunch)
                         after_lunch_time = True
+                        time_flags["after_lunch_time"] = True
                     if not before_dinner == "":
                         before_dinner_seconds = time_to_seconds(before_dinner)
                         before_dinner_time = True
+                        time_flags["before_dinner_time"] = True
                     if not after_dinner == "":
                         after_dinner_seconds = time_to_seconds(after_dinner)
                         after_dinner_time = True
+                        time_flags["after_dinner_time"] = True
                     if not before_sleep == "":
                         before_sleep_seconds = time_to_seconds(before_sleep)
                         before_sleep_time = True
+                        time_flags["before_sleep_time"] = True
             
                     now = datetime.now()
                     current_time = now.strftime("%H:%M:%S")
@@ -655,6 +696,9 @@ class SensorThread(QObject):
                         col, row, servoNum = self.load_state()
                         while row < self.max_row:
                             while col < self.max_col:
+                                
+                                # self.pwm.set_pwm(servoNum, 0, self.servo_max)      
+                                # self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
                                 
                                 cur_col, cur_row, servoNum = self.load_state()
                                 
@@ -679,24 +723,33 @@ class SensorThread(QObject):
                                 if not before_breakfast == "":
                                     before_breakfast_seconds = time_to_seconds(before_breakfast)
                                     before_breakfast_time = True
+                                    time_flags["before_breakfast_time"] = True
                                 if not after_breakfast == "":    
                                     after_breakfast_seconds = time_to_seconds(after_breakfast)
                                     after_breakfast_time = True
+                                    time_flags["after_breakfast_time"] = True
                                 if not before_lunch == "":
                                     before_lunch_seconds = time_to_seconds(before_lunch)
                                     before_lunch_time = True
+                                    time_flags["before_lunch_time"] = True
                                 if not after_lunch == "":
                                     after_lunch_seconds = time_to_seconds(after_lunch)
                                     after_lunch_time = True
+                                    time_flags["after_lunch_time"] = True
                                 if not before_dinner == "":
                                     before_dinner_seconds = time_to_seconds(before_dinner)
                                     before_dinner_time = True
+                                    time_flags["before_dinner_time"] = True
                                 if not after_dinner == "":
                                     after_dinner_seconds = time_to_seconds(after_dinner)
                                     after_dinner_time = True
+                                    time_flags["after_dinner_time"] = True
                                 if not before_sleep == "":
                                     before_sleep_seconds = time_to_seconds(before_sleep)
                                     before_sleep_time = True
+                                    time_flags["before_sleep_time"] = True
+                                
+                                true_count = sum(time_flags.values())
                                 
                                 now = datetime.now()
                                 current_time = now.strftime("%H:%M:%S")
@@ -723,9 +776,9 @@ class SensorThread(QObject):
                                     cursor = connection.cursor()
                                                                     
                                     for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
-                                        print(f"{check_row} == {cur_row}")
-                                        print(f"{check_col} == {cur_col}")
-                                        print("----------------")
+                                        # print(f"{check_row} == {cur_row}")
+                                        # print(f"{check_col} == {cur_col}")
+                                        # print("----------------")
                                         if check_row == cur_row and check_col == cur_col:
                                             query = f'''
                                                 SELECT drug_remaining, drug_remaining_meal, internal_drug, drug_eat
@@ -757,7 +810,6 @@ class SensorThread(QObject):
                                             meal_drug_list[i] = (item[0], item[1], item[2], item[3], item[4], item[5], item[6], 1)
                                     self.save_meal_drug_list(meal_drug_list)
                                     ####################################################################################                        
-                                    
                                     
                                     if current_time == before_breakfast:
                                         meal_name = "มื้อเช้า ก่อนอาหาร"
@@ -838,129 +890,286 @@ class SensorThread(QObject):
                                                                 
                                             start_time = time.time()
                                         
-                                        if self.meal_seconds >= before_breakfast_seconds - (5 * 60) and self.meal_seconds <= before_breakfast_seconds and meal_seconds != before_breakfast_seconds and before_breakfast_time:
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name)
-                                            bbed_not_receive = True                     
-                                            stay_in_loop = False
+                                        # print(f"self.meal_seconds --> {self.meal_seconds}")
+                                        # print(f"after_breakfast_seconds --> {after_breakfast_seconds}")
+                                        # print(f"self.meal_seconds >= after_breakfast_seconds - (5 * 60) --> {self.meal_seconds >= after_breakfast_seconds - (5 * 60)}")
+                                        # print(f"self.meal_seconds <= after_breakfast_seconds --> {self.meal_seconds <= after_breakfast_seconds}")
+                                        # print(f"meal_seconds != after_breakfast_seconds --> {meal_seconds != after_breakfast_seconds}")
+                                        # print(f"after_breakfast_time --> {after_breakfast_time}")
+                                        
+                                        current_day = datetime.now().date()
+                                        
+                                        print(f"self.previous_day --> {self.previous_day}")
+                                        print(f"current_day --> {current_day}")
+                                        if current_day != self.previous_day:
+                                            self.is_new_day = True
+                                            self.previous_day = current_day
                                             
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
+                                        ########################################################################################
+                                        if true_count == 1:
+                                            if self.meal_seconds >= before_breakfast_seconds - (5 * 60) and before_breakfast_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bb_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
                                             
-                                            self.save_main_state(True)
-                                        elif self.meal_seconds >= after_breakfast_seconds - (5 * 60) and self.meal_seconds <= after_breakfast_seconds and meal_seconds != after_breakfast_seconds and after_breakfast_time:
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name)
-                                            bb_not_receive = True                            
-                                            stay_in_loop = False
-                                            
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
-                                            
-                                            self.save_main_state(True)
-                                        elif self.meal_seconds >= before_lunch_seconds - (5 * 60) and self.meal_seconds <= before_lunch_seconds and meal_seconds != before_lunch_seconds and before_lunch_time:
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name)
-                                            ab_not_receive = True                                  
-                                            stay_in_loop = False
-                                            
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
-                                            
-                                            self.save_main_state(True)
-                                        elif self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds and after_lunch_time:
-                                            
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name)  
-                                            bl_not_receive = True                               
-                                            stay_in_loop = False
-                                            
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
-                                            
-                                            self.save_main_state(True)
-                                        elif self.meal_seconds >= before_dinner_seconds - (5 * 60) and self.meal_seconds <= before_dinner_seconds and meal_seconds != before_dinner_seconds and before_dinner_time:
-                                            
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name)
-                                            al_not_receive = True                                 
-                                            stay_in_loop = False
-                                            
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
-                                            
-                                            self.save_main_state(True)
-                                        elif self.meal_seconds >= after_dinner_seconds - (5 * 60) and self.meal_seconds <= after_dinner_seconds and meal_seconds != after_dinner_seconds and after_dinner_time:
-                                            
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name)
-                                            bd_not_receive = True                                 
-                                            stay_in_loop = False
-                                            
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
-                                            
-                                            self.save_main_state(True)
-                                        elif self.meal_seconds >= before_sleep_seconds - (5 * 60) and self.meal_seconds <= before_sleep_seconds and meal_seconds != before_sleep_seconds and before_sleep_time:
-                                            
-                                            time.sleep(3)
-                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
-                                            notify_time = 1
-                                            self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            time.sleep(2)
-                                            self.pwm.set_pwm(15, 0, self.servo_max)
-                                            time.sleep(1)
-                                            self.not_receive_line(self.channel_access_token, meal_name) 
-                                            bd_not_receive = True       
-                                            
-                                            self.distance_event.clear()
-                                            self.motion_detect_event.clear()
-                                            self.beep_event.clear()
-                                                                    
-                                            stay_in_loop = False
-                                            self.save_main_state(True)
+                                            elif self.meal_seconds >= after_breakfast_seconds - (5 * 60) and after_breakfast_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                ab_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
+                                                
+                                            elif self.meal_seconds >= before_lunch_seconds - (5 * 60) and before_lunch_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bl_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
+                                                
+                                            elif self.meal_seconds >= after_lunch_seconds - (5 * 60) and after_lunch_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                al_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
+                                                
+                                            elif self.meal_seconds >= before_dinner_seconds - (5 * 60) and before_dinner_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bd_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
+                                                
+                                            elif self.meal_seconds >= after_dinner_seconds - (5 * 60) and after_dinner_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                ad_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
+                                                
+                                            elif self.meal_seconds >= before_sleep_seconds - (5 * 60) and before_sleep_time and self.is_new_day:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bbed_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                                
+                                                if self.is_new_day:
+                                                    self.is_new_day = False
+                                                
+                                        ##########################################################################################        
+                                        else:
+                                            if self.meal_seconds >= before_breakfast_seconds - (5 * 60) and self.meal_seconds <= before_breakfast_seconds and meal_seconds != before_breakfast_seconds and before_breakfast_time:
+                                                
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bbed_not_receive = True                     
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                            elif self.meal_seconds >= after_breakfast_seconds - (5 * 60) and self.meal_seconds <= after_breakfast_seconds and meal_seconds != after_breakfast_seconds and after_breakfast_time:
+                                                
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bb_not_receive = True                            
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                            elif self.meal_seconds >= before_lunch_seconds - (5 * 60) and self.meal_seconds <= before_lunch_seconds and meal_seconds != before_lunch_seconds and before_lunch_time:
+                                                
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                ab_not_receive = True                                  
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                            elif self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds and after_lunch_time:
+                                                
+                                                
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)  
+                                                bl_not_receive = True                               
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                            elif self.meal_seconds >= before_dinner_seconds - (5 * 60) and self.meal_seconds <= before_dinner_seconds and meal_seconds != before_dinner_seconds and before_dinner_time:
+                                                
+                                                
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                al_not_receive = True                                 
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                            elif self.meal_seconds >= after_dinner_seconds - (5 * 60) and self.meal_seconds <= after_dinner_seconds and meal_seconds != after_dinner_seconds and after_dinner_time:
+                                                
+                                                
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name)
+                                                bd_not_receive = True                                 
+                                                stay_in_loop = False
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                
+                                                self.save_main_state(True)
+                                            elif self.meal_seconds >= before_sleep_seconds - (5 * 60) and self.meal_seconds <= before_sleep_seconds and meal_seconds != before_sleep_seconds and before_sleep_time:
+                                                print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                                notify_time = 1
+                                                self.pwm.set_pwm(15, 0, self.servo_drop)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                                time.sleep(2)
+                                                self.pwm.set_pwm(15, 0, self.servo_max)
+                                                time.sleep(1)
+                                                self.not_receive_line(self.channel_access_token, meal_name) 
+                                                bd_not_receive = True       
+                                                
+                                                self.distance_event.clear()
+                                                self.motion_detect_event.clear()
+                                                self.beep_event.clear()
+                                                                        
+                                                stay_in_loop = False
+                                                self.save_main_state(True)
                                         # เงื่อนไขถ้ามารับยา
                                         if get_drug:
                                             print("ผู้สูงอายุมารับยาแล้ว")       
@@ -984,7 +1193,7 @@ class SensorThread(QObject):
                                         if not col == self.max_col:    
                                             if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                                                 self.save_state(col, row, servoNum)  # Save the current state
-                                                print("h")   
+                                                # print("h")   
                                             
                                             if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:     
                                                 self.save_state(0,0,0)

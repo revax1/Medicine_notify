@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import sqlite3
 import sys
+import Adafruit_PCA9685
 
 from AddDrug_New import Ui_Add_drug
 from each_drug import Ui_each_drug
@@ -15,6 +16,11 @@ from PyQt5.QtWidgets import QCalendarWidget, QMessageBox
 
 class Ui_drug_List(object):       
     def setupUi(self, drug_List):
+        self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
+        # self.servo_min = 150
+        # self.servo_max = 600
+        # self.pwm = Adafruit_PCA9685.PCA9685()
+        
         UI_instance.Set(drug_List)
         show_widget_fullscreen(drug_List)
 
@@ -172,6 +178,11 @@ class Ui_drug_List(object):
         drug_item_form.widgetSet(UI_instance.Get(), Ui_each_drug)       
 
     def backpage(self):
+        
+        # cur_col, cur_row, servoNum = self.load_state()
+        # self.pwm.set_pwm(servoNum, 0, self.servo_max)
+        # self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
+        
         from main import Ui_Medicine_App
         backpage_form = UI_Genarate()
         backpage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
@@ -179,6 +190,15 @@ class Ui_drug_List(object):
     def open_add_drug(self):
         add_drug_form = UI_Genarate()
         add_drug_form.widgetSet(UI_instance.Get(), Ui_Add_drug)
+        
+    def load_state(self):
+        if os.path.exists(self.state_file):
+            with open(self.state_file, 'r') as f:
+                content = f.read().split(',')
+                state = (int(content[0]), int(content[1]), int(content[2]))
+                # print(f'Loaded state: {state[0]},{state[1]},{state[2]}')
+                return state
+        return 0, 0, 0  # default values if the file doesn't exist
 
     def update_drug_list(self):
         connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
