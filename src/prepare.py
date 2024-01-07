@@ -39,9 +39,9 @@ class Ui_prepare(object):
         show_widget_fullscreen(prepare)
         
         self.get_prepare = False
-        self.state_file = 'servo_state.txt'
-        self.prepare_state_file = 'prepare_state.txt'
-        self.meal_drug_list_file = 'meal_drug_list.json'
+        self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
+        self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
+        self.meal_drug_list_file = '/home/pi/Documents/Medicine_notify/state/meal_drug_list.json'
         self.meal_drug_list = []
         
         prepare.setObjectName("prepare")
@@ -164,21 +164,21 @@ class Ui_prepare(object):
         font.setPointSize(12)
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
-        self.previous_pushButton = QtWidgets.QPushButton(self.frame_4)
-        self.previous_pushButton.setGeometry(QtCore.QRect(int(210 * width), int(5 * height), int(71 * width), int(31 * height)))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.previous_pushButton.setFont(font)
-        self.previous_pushButton.setStyleSheet("border-radius: 9px;\n"
-"color: rgb(0, 0, 0);\n"
-"background-color: rgb(115, 172, 131);")
-         # Add drop shadow effect to the button
-        shadow = QGraphicsDropShadowEffect(self.previous_pushButton)
-        shadow.setBlurRadius(8)
-        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
-        shadow.setOffset(0,2)
-        self.previous_pushButton.setGraphicsEffect(shadow)
-        self.previous_pushButton.setObjectName("previous_pushButton")
+#         self.previous_pushButton = QtWidgets.QPushButton(self.frame_4)
+#         self.previous_pushButton.setGeometry(QtCore.QRect(int(210 * width), int(5 * height), int(71 * width), int(31 * height)))
+#         font = QtGui.QFont()
+#         font.setPointSize(12)
+#         self.previous_pushButton.setFont(font)
+#         self.previous_pushButton.setStyleSheet("border-radius: 9px;\n"
+# "color: rgb(0, 0, 0);\n"
+# "background-color: rgb(115, 172, 131);")
+#          # Add drop shadow effect to the button
+#         shadow = QGraphicsDropShadowEffect(self.previous_pushButton)
+#         shadow.setBlurRadius(8)
+#         shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+#         shadow.setOffset(0,2)
+#         self.previous_pushButton.setGraphicsEffect(shadow)
+#         self.previous_pushButton.setObjectName("previous_pushButton")
         self.next_pushButton = QtWidgets.QPushButton(self.frame_4)
         self.next_pushButton.setGeometry(QtCore.QRect(int(300 * width), int(5 * height), int(71 * width), int(31 * height)))
         font = QtGui.QFont()
@@ -214,8 +214,8 @@ class Ui_prepare(object):
         self.next_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.next_pushButton))
         self.next_pushButton.released.connect(lambda: self.set_button_released_style(self.next_pushButton))
 
-        self.previous_pushButton.pressed.connect(lambda: self.set_button_pressed_style2(self.previous_pushButton))
-        self.previous_pushButton.released.connect(lambda: self.set_button_released_style2(self.previous_pushButton))
+        # self.previous_pushButton.pressed.connect(lambda: self.set_button_pressed_style2(self.previous_pushButton))
+        # self.previous_pushButton.released.connect(lambda: self.set_button_released_style2(self.previous_pushButton))
 
         # self.next_pushButton.clicked.connect(self.next_pushButton_clicked)                                                           ตรงนี้
         # self.add_back_pushButton.clicked.connect(self.add_back_pushButton_clicked)
@@ -278,7 +278,7 @@ class Ui_prepare(object):
         # if self.selected_ball_index < (row_max * col_max) - 1:
         print(self.slot)
         if self.slot <= (row_max * col_max):
-            connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+            connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
             cursor = connection.cursor()
             query = '''
                 SELECT  h.drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size,
@@ -488,7 +488,7 @@ class Ui_prepare(object):
                  
                 
     def sort_handle(self):
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
 
         query = '''
@@ -546,7 +546,7 @@ class Ui_prepare(object):
         self.label.setText(_translate("prepare", "รายชื่อยาที่ต้องเตรียม"))
         self.label_2.setText(_translate("prepare", "วางตามช่องที่แสดง"))
         self.next_pushButton.setText(_translate("prepare", "ถัดไป"))
-        self.previous_pushButton.setText(_translate("prepare", "ก่อนหน้า"))
+        # self.previous_pushButton.setText(_translate("prepare", "ก่อนหน้า"))
 import resources_rc
 
 if __name__ == "__main__":

@@ -266,7 +266,7 @@ class Ui_day_start(object):
         # print(f"day_start {self.updated_data2}")
         self.label.setText(f"{self.updated_data2['drug_name']}")
 
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
 
         # Query to retrieve data from the database based on drug_id
@@ -335,7 +335,7 @@ class Ui_day_start(object):
     
     def save_date_to_database(self, selected_date, drug_id):
         # Connect to SQLite database
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
 
         # Check if a record already exists

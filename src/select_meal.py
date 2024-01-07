@@ -540,7 +540,7 @@ class Ui_select_meal(object):
         # ในส่วนนี้เราเพิ่มการเชื่อมต่อกับเมธอด save_checkbox_states ในปุ่มย้อนกลับ
         self.next_pushButton.clicked.connect(self.save_checkbox_states_and_close)
         # เพิ่มการเชื่อมต่อฐานข้อมูล SQLite3
-        self.conn = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        self.conn = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         self.cursor = self.conn.cursor()
 
         self.set_meal_info(drug_ID_instance.Get())

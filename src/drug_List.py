@@ -181,7 +181,7 @@ class Ui_drug_List(object):
         add_drug_form.widgetSet(UI_instance.Get(), Ui_Add_drug)
 
     def update_drug_list(self):
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         cursor.execute("SELECT drug_name FROM Drug")
         drugs = cursor.fetchall()
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName("/home/pi/Documents/Medicine_notify/src/medicine.db")
+    db.setDatabaseName("/home/pi/Documents/Medicine_notify/db/medicine.db")
     if not db.open():
         print("Cannot establish a database connection.")
         sys.exit(1)

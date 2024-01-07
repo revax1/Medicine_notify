@@ -205,7 +205,7 @@ class Ui_encrypt_check(object):
             # Check if the user-entered code matches the generated code
             if user_code == self.generated_code:
                 # Code is correct, update the database with the received data
-                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
                 cursor = connection.cursor()
 
                 update_query = '''

@@ -469,7 +469,7 @@ class Ui_select_time(object):
         self.bbed_pushButton.released.connect(lambda: self.set_button_released_style7(self.bbed_pushButton))
 
          # Connect to the SQLite database
-        self.connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        self.connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = self.connection.cursor()
 
         # List of meal names

@@ -9,7 +9,7 @@ import sqlite3
 class Ui_time_Edit(object):
     def __init__(self):
         self.meal_label_text = meal_label_instance.Get()
-        self.connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        self.connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
 
     def convert_thai_to_arabic(self, thai_numeral):
         thai_to_arabic_mapping = {

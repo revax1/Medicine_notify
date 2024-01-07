@@ -4,7 +4,10 @@ width, height = Scale_Width_Height()
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QColor
 import sqlite3
+import json
+
 
 from prepare import Ui_prepare
 
@@ -38,7 +41,10 @@ class Ui_sortDrug(object):
         UI_instance.Set(sortDrug)
         show_widget_fullscreen(sortDrug)
         
-        self.prepare_state_file = 'prepare_state.txt'
+        self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
+        self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
+        self.meal_drug_list_file = '/home/pi/Documents/Medicine_notify/state/meal_drug_list.json'
+        
         
         self.get_prepare = self.load_prepare_state()      # เช็คว่าเตรียมยาแล้วรึยีง
 
@@ -164,6 +170,7 @@ class Ui_sortDrug(object):
             "color: rgb(0, 0, 0);\n"
             "background-color: rgb(227, 151, 61);"
         )
+        
     def homepage(self):
         from main import Ui_Medicine_App
         backpage_form = UI_Genarate()
@@ -249,10 +256,31 @@ class Ui_sortDrug(object):
         prepare_str = 'True' if prepare else 'False'
         with open(self.prepare_state_file, 'w') as f:
             f.write(prepare_str)
+            
+    def save_meal_drug_list(self, prepare_list):
+        prepare_str = json.dumps(prepare_list, ensure_ascii=False)
+        with open(self.meal_drug_list_file, 'w', encoding='utf-8') as f:
+            f.write(prepare_str)
+            
+    def load_meal_drug_list(self):
+        if os.path.exists(self.meal_drug_list_file):
+                with open(self.meal_drug_list_file, 'r', encoding='utf-8') as f:
+                    content = json.load(f)
+                    return content
+        return []
+    
+    def load_state(self):
+        if os.path.exists(self.state_file):
+            with open(self.state_file, 'r') as f:
+                content = f.read().split(',')
+                state = (int(content[0]), int(content[1]), int(content[2]))
+                # print(f'Loaded state: {state[0]},{state[1]},{state[2]}')
+                return state
+        return 0, 0, 0  # default values if the file doesn't exist
 
     def sort_handle(self):
         if self.get_prepare:
-            connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+            connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
             cursor = connection.cursor()
 
             query = '''
@@ -301,7 +329,7 @@ class Ui_sortDrug(object):
             cursor_col = 0
             check_all = 1
             while(slot <= row_max * col_max):
-                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
                 cursor = connection.cursor()
                 query = '''
                     SELECT  h.drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size,
@@ -328,7 +356,7 @@ class Ui_sortDrug(object):
                         return
                     check_all += 1
                     
-
+                # print(drug_info_list)
                 if drug_info_list:
                     check_all = 1
                     # print(f"ลำดับ: {slot}, ยา{drug_info_list[0][14]}\n")
@@ -427,17 +455,89 @@ class Ui_sortDrug(object):
                     check_meal = 1
                 
             connection.close()
+            
+            
+
 
     # def dispensing_medicine(self):
-    #     dispensing = 9
+        
+    #     meal_drug_list = self.load_meal_drug_list()
+        
+    #     set_ball_dispensing = set()
+        
+    #     for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+    #         if state == 1:
+    #             set_ball_dispensing.add((check_col, check_row))
+        
+    #     check_meal = 1
+        
+    #     connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
+    #     cursor = connection.cursor()
+    #     query = '''
+    #         SELECT  h.drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size,
+    #                 h.meal_id, meal_name, time
+    #             FROM Drug_handle AS h
+    #             LEFT JOIN Drug AS d ON h.drug_id = d.drug_id
+    #             LEFT JOIN Meal AS m ON h.meal_id = m.meal_id
+    #         WHERE h.meal_id = ?
+    #         '''
+    #     cursor.execute(query, (check_meal,))   
+    #     drug_info_list = cursor.fetchall()
+        
+    #     if self.get_prepare:
+    #         if drug_info_list:
+    #             color_text_mapping = {
+    #             (255, 102, 102): {"text": "เช้าก่อน", "enabled": False},    # สีแดง
+    #             (255, 178, 102): {"text": "เช้าหลัง", "enabled": False},   # สีส้ม
+    #             (255, 255, 102): {"text": "เที่ยงก่อน", "enabled": False},    # สีเหลือง
+    #             (178, 255, 102): {"text": "เที่ยงหลัง", "enabled": False},   # สีเขียวอ่อน
+    #             (102, 255, 102): {"text": "เย็นก่อน", "enabled": False},   # สีเขียวเข้ม
+    #             (102, 255, 255): {"text": "เย็นหลัง", "enabled": False},    # สีฟ้า
+    #             (0, 180, 255): {"text": "ก่อนนอน", "enabled": False}    # สีน้ำเงิน
+    #             }
+            
+    #             color_index = drug_info_list[0][14] - 1
+    #             if color_index < len(color_text_mapping):
+    #                 color = list(color_text_mapping.keys())[color_index]
+                
+    #             for check_col, check_row in set_ball_dispensing:  # Loop through set_ball_dispensing to change color
+    #                 item = QTableWidgetItem(color_text_mapping[color]["text"])
+    #                 item.setBackground(QColor(*color))
+    #                 self.tableWidget.setItem(check_row, check_col, item)
+                
+    #             row_new = (col_max - row_max) - 1
+    #             col_new = (row_max - col_max) - 1
+                
+    #             if cursor_row > row_max + row_new:                      # คำนวณตำแหน่งของ row
+    #                 cursor_row = 0
+    #                 cursor_col += 1
+    #             if cursor_col > col_max + col_new:                      # คำนวณตำแหน่งของ col
+    #                 cursor_col = 0
+                
+    #             cursor_row += 1  # เพิ่มตำแหน่ง row ไปอีก 1
+    #             if cursor_row >= self.tableWidget.rowCount():  # ถ้าเลื่อนแถวเกินจำนวนแถวทั้งหมดให้กลับไปที่แถวแรก
+    #                 cursor_row = 0
+    #         else:
+    #             check_meal += 1
+                    
+    #         if check_meal > 7:
+    #             check_meal = 1
+    #     connection.close()
+
+    # def dispensing_medicine(self):
+    #     dispensing = 6
     #     check_meal = 1
     #     cursor_row = 0
     #     cursor_col = 0
     #     i = 0
         
+    #     meal_drug_list = self.load_meal_drug_list()
+        
+    #     set_ball_dispensing = set()
+        
     #     if self.get_prepare:
     #         while(i < dispensing):
-    #             connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+    #             connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
     #             cursor = connection.cursor()
     #             query = '''
     #                 SELECT  h.drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size,
@@ -451,6 +551,7 @@ class Ui_sortDrug(object):
     #             # print(check_meal)
     #             cursor.execute(query, (check_meal,))   
     #             drug_info_list = cursor.fetchall()
+    #             print(drug_info_list)
                     
     #             if drug_info_list:
     #                 color_text_mapping = {
@@ -485,13 +586,14 @@ class Ui_sortDrug(object):
     #                     cursor_row = 0
                     
     #                 i += 1
-                    
+
     #             check_meal += 1
                     
     #             if check_meal > 7:
     #                 check_meal = 1
 
     #         connection.close()
+
 
     def retranslateUi(self, sortDrug):
         _translate = QtCore.QCoreApplication.translate

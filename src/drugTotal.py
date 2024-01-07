@@ -128,7 +128,7 @@ class Ui_drugTotal(object):
         self.load_drug_data()
 
     def load_drug_data(self):
-        connection = sqlite3.connect("medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         cursor.execute('''
             SELECT drug_name, external_drug, internal_drug, drug_eat FROM Drug 

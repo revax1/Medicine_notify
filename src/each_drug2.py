@@ -322,7 +322,7 @@ class Ui_each_drug2(object):
         self.drug_id = drug_id
         self.label.setText(f"{self.updated_data['drug_name']}")
         # print(drug_id)
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         query = '''
             SELECT * FROM Drug WHERE drug_id = ?

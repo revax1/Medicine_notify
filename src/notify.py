@@ -20,17 +20,20 @@ class NotifyThread(QThread):
 
     def run(self):
         while True:
-            print("hi there")
+            # print("hi there")
             self.homepage = self.load_main_state()
             
             # self.update_signal.emit()
             if self.homepage:
+                print("get homepage")
                 self.update_signal.emit(self.homepage)
                 self.save_main_state(False)
-                self.finished.emit()
+                # self.finished.emit()
             self.msleep(1000)  # Wait for 1 second
             
     # def handle_current_time_signal(self):
+    # def print(self):
+    #     print("hi")
     
     def load_main_state(self):
         if os.path.exists(self.main_state_file):
@@ -51,11 +54,11 @@ class Ui_notify(object):
         UI_instance.Set(notify)
         show_widget_fullscreen(notify)
         
-        self.state_file = 'servo_state.txt'
-        self.prepare_state_file = 'prepare_state.txt'
-        self.meal_drug_list_file = 'meal_drug_list.json'
-        self.notify_state_file = 'notify_state.txt'
-        # self.main_state_file = 'main_state.txt'
+        self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
+        self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
+        self.meal_drug_list_file = '/home/pi/Documents/Medicine_notify/state/meal_drug_list.json'
+        self.notify_state_file = '/home/pi/Documents/Medicine_notify/state/notify_state.txt'
+        # self.main_state_file = '/home/pi/Documents/Medicine_notify/state/main_state.txt'
 
         notify.setObjectName("notify")
         notify.resize(int(683 * width), int(400 * height))
@@ -190,14 +193,6 @@ class Ui_notify(object):
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName("label_2")
         
-        print("1")
-        print("2")
-        
-        def three():
-            print("3")
-            
-        three()
-        
         # self.label_2 = QtWidgets.QLabel(self.centralwidget)
         # self.label_2.setGeometry(QtCore.QRect(410, 120, 200, 31))
         # font = QtGui.QFont()
@@ -235,15 +230,15 @@ class Ui_notify(object):
                         
         # self.homepage = self.load_main_state()  
         # print(self.homepage)
+        # self.timer = QTimer()
+        # self.timer.timeout.connect(self.setupUi(notify))
+        # self.timer.start(1000)  # 1 วินาที
         
         self.thread = NotifyThread()
         self.thread.update_signal.connect(self.tohomepage)
+        
         self.thread.finished.connect(self.thread.quit)
         self.thread.start()
-        
-        # self.timer = QTimer()
-        # self.timer.timeout.connect(self.handle_current_time_signal)
-        # self.timer.start(1)
 
     def tohomepage(self, get_home):
         # print("hi")
@@ -319,7 +314,7 @@ import resources_rc
 # notify = Ui_notify()
 
 # timer = QTimer()
-# timer.timeout.connect(notify.handle_current_time_signal)
+# timer.timeout.connect(notify.setupUi)
 # timer.start(1)
 
 if __name__ == "__main__":

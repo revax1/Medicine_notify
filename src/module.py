@@ -50,20 +50,20 @@ class SensorThread(QObject):
         GPIO.setup(self.GPIO_PIR, GPIO.IN)
         GPIO.setup(self.led_pin, GPIO.OUT)
         
-        # self.pwm = Adafruit_PCA9685.PCA9685()
+        self.pwm = Adafruit_PCA9685.PCA9685()
         self.servo_min = 90
         self.servo_max = 570
         self.max_col = 8
         self.max_row = 5
         
-        self.state_file = 'servo_state.txt'
-        self.prepare_state_file = 'prepare_state.txt'
-        self.main_state_file = 'main_state.txt'
-        self.notify_state_file = 'notify_state.txt'
-        self.meal_drug_list_file = 'meal_drug_list.json'
+        self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
+        self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
+        self.main_state_file = '/home/pi/Documents/Medicine_notify/state/main_state.txt'
+        self.notify_state_file = '/home/pi/Documents/Medicine_notify/state/notify_state.txt'
+        self.meal_drug_list_file = '/home/pi/Documents/Medicine_notify/state/meal_drug_list.json'
         
         # Set frequency to 60hz, good for servos.
-        # self.pwm.set_pwm_freq(60)
+        self.pwm.set_pwm_freq(60)
         
     ####################### สำหรับ Ultrasonic Sensor ########################
 
@@ -147,6 +147,11 @@ class SensorThread(QObject):
                     content = json.load(f)
                     return content
         return []
+    
+    def save_meal_drug_list(self, prepare_list):
+        prepare_str = json.dumps(prepare_list, ensure_ascii=False)
+        with open(self.meal_drug_list_file, 'w', encoding='utf-8') as f:
+            f.write(prepare_str)
 
     ############################# สำหรับ Audio ##############################
 
@@ -159,6 +164,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/get_drug.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/get_drug.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -200,6 +206,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bb.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bb.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -220,6 +227,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_ab.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_ab.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -240,6 +248,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bl.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bl.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -260,6 +269,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_al.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_al.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -280,6 +290,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bd.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bd.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -300,6 +311,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_ad.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_ad.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -320,6 +332,7 @@ class SensorThread(QObject):
 
         pygame.mixer.init()
         pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bbed.mp3")
+        # pygame.mixer.music.load("/home/pi/Documents/Medicine_notify/sound/fg_bbed.m4a")
         pygame.mixer.music.play()
         # time.sleep(3)
 
@@ -347,10 +360,10 @@ class SensorThread(QObject):
         # print("Waiting for sensor to settle")
 
         if GPIO.input(self.GPIO_PIR):              # Check whether pir is HIGH
-            # print("Motion Detected!")
+            print("Motion Detected!")
             pass
         else:
-            # print("No Motion Detected!")
+            print("No Motion Detected!")
             pass
 
     ############################ LED #######################################
@@ -365,14 +378,13 @@ class SensorThread(QObject):
     ##################### สำหรับ Line Messaging API #########################
 
     def get_drug_line(self, channel_access_token, meal_name):
-        url = "https://api.line.me/v2/bot/message/push"
+        url = "https://api.line.me/v2/bot/message/broadcast"
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + channel_access_token,
         }
 
         data = {
-            "to": "Ub6246111505735410a4409ab3601a7f1",
             "messages": [
                 {
                     "type": "text",
@@ -381,19 +393,17 @@ class SensorThread(QObject):
             ],
         }
         
-        response = requests.post(url, json=data, headers=headers)
-        print(response.text)
+        response = requests.post(url, headers=headers, json=data)
     
     # ส่งรูปภาพเมื่อมารับยา
     def send_image_to_line(self, image_url, channel_access_token, meal_name):
-        url = "https://api.line.me/v2/bot/message/push"
+        url = "https://api.line.me/v2/bot/message/broadcast"
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + channel_access_token,
         }
 
         data = {
-            "to": "Ub6246111505735410a4409ab3601a7f1",
             "messages": [
                 {
                     "type": "text",
@@ -406,19 +416,17 @@ class SensorThread(QObject):
                 } 
             ],
         }
-
-        response = requests.post(url, json=data, headers=headers)
-        print(response.text)
+        
+        response = requests.post(url, headers=headers, json=data)
         
     def not_receive_line(self, channel_access_token, meal_name):
-        url = "https://api.line.me/v2/bot/message/push"
+        url = "https://api.line.me/v2/bot/message/broadcast"
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + channel_access_token,
         }
 
         data = {
-            "to": "Ub6246111505735410a4409ab3601a7f1",
             "messages": [
                 {
                     "type": "text",
@@ -426,19 +434,17 @@ class SensorThread(QObject):
                 }
             ],
         }
-
-        response = requests.post(url, json=data, headers=headers)
-        print(response.text)
+        
+        response = requests.post(url, headers=headers, json=data)
         
     def wait_receive_line(self, channel_access_token, number):
-        url = "https://api.line.me/v2/bot/message/push"
+        url = "https://api.line.me/v2/bot/message/broadcast"
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + channel_access_token,
         }
 
         data = {
-            "to": "Ub6246111505735410a4409ab3601a7f1",
             "messages": [
                 {
                     "type": "text",
@@ -446,21 +452,13 @@ class SensorThread(QObject):
                 }
             ],
         }
-
-        response = requests.post(url, json=data, headers=headers)
-        print(response.text)
         
-    # ส่ง request ให้ header
-
-    def send_request_with_header(self, url, header_name, header_value):
-        headers = {header_name: header_value}
-        response = requests.get(url, headers=headers)
-    #     print(response.text)
+        response = requests.post(url, headers=headers, json=data)
         
     ########################################################################
 
     def load_meal_times_from_database(self):
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
 
         # cursor.execute("SELECT meal_name, time FROM Meal")
@@ -540,6 +538,8 @@ class SensorThread(QObject):
         after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
         before_sleep = meal_times.get("มื้อก่อนนอน", "")
         
+        print(meal_times)
+        
         if not before_breakfast == "":
             before_breakfast_seconds = time_to_seconds(before_breakfast)
             before_breakfast_time = True
@@ -568,9 +568,9 @@ class SensorThread(QObject):
         web_server_thread.start()
 
         # Channel Access Token และ URL ของไฟล์สำหรับเก็บรูปภาพใน Line
-        self.ngrok_url = 'https://secure-zebra-lately.ngrok-free.app/'
+        self.ngrok_url = "https://secure-zebra-lately.ngrok-free.app/"
         self.image_url = "https://secure-zebra-lately.ngrok-free.app/image.jpg"
-        self.channel_access_token = "o776VQ6aRKQlMK0EbeahQt0AmQAvY8RLv0L5fDGgPqhiccGJZnCa/Efir1W4tdsN03TLojY+CEHcM8sk97XJTc+URIvZLw9IRZvRHPYQmZvnZl65E5Zy2dA5H7m+pkostxNs1Zxlg1Nzwe8CFM3s7wdB04t89/1O/w1cDnyilFU="
+        self.channel_access_token = "HwJayMU6DtjzE/XyRwAtW6sTVuxbYWuR9oK9OqMvJHxfoBg7Skje0j3OOlp/XjKGLPJDjimOjy+F1EnsX+uVBtXpEFXBbdpls4wVo7tPa//yKWPUmet+pIaQ3o4mbrItzl1GR4e+lQvZJGM0trCeWgdB04t89/1O/w1cDnyilFU="
 
         # self.send_request_with_header(self.ngrok_url, 'ngrok-skip-browser-warning', 'true')       # ให้ skip หน้าเว็บ warning
         
@@ -584,17 +584,18 @@ class SensorThread(QObject):
                     meal_drug_list = self.load_meal_drug_list()
                     
                     selected_items = []
-                    cur_row, cur_col, servoNum = self.load_state()
+                    cur_col, cur_row, servoNum = self.load_state()
 
-                    for check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
-                        if check_row == cur_row and check_col == cur_col:
-                            selected_items.append((check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time))
-                    # print(selected_items)
+                    for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+                        if check_col == cur_col and check_row == cur_row:
+                            selected_items.append((check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time))
+                    print(selected_items)
                     
                     cur_meal_name = selected_items[-1][5]
                     cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
-                    # print(cur_meal_name)
-                    # print(cur_meal_time)
+                    
+                    print(f"cur_meal_name: {cur_meal_name}")
+                    print(f"cur_meal_time: {cur_meal_time}")
                     # print("=============")    
                     ###############################################################################################################
                     # Access meal times using the meal names
@@ -631,14 +632,26 @@ class SensorThread(QObject):
                     # Move servo on channel O between extremes.
                     now = datetime.now()
                     current_time = now.strftime("%H:%M:%S")
-                    # print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
+                    # print(f"ขณะนี้เวลา: {current_time}")
                     
-                    if current_time == cur_meal_time:
+                    if current_time == cur_meal_time:                           # แก้ cur_meal_time
                         meal_seconds = time_to_seconds(current_time)
                         self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
                         col, row, servoNum = self.load_state()
                         while row < self.max_row:
                             while col < self.max_col:
+                                
+                                cur_col, cur_row, servoNum = self.load_state()
+                                
+                                for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+                                    if check_col == cur_col and check_row == cur_row:
+                                        selected_items.append((check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time))
+                                
+                                cur_meal_name = selected_items[-1][5]
+                                cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
+                                
+                                print(f"cur_meal_name: {cur_meal_name}")
+                                print(f"cur_meal_time: {cur_meal_time}")
                                 
                                 meal_times = self.load_meal_times_from_database()
             
@@ -675,32 +688,31 @@ class SensorThread(QObject):
                                 
                                 now = datetime.now()
                                 current_time = now.strftime("%H:%M:%S")
-                                # print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
-                                
+                                # print(f"ขณะนี้เวลา: {current_time}")
                                 
                                 if current_time == cur_meal_time:
                                     self.save_notify_state(True)
                                     
                                     meal_seconds = time_to_seconds(current_time)
                                     self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
-                                    # self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
-                                    # time.sleep(2)
+                                    self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
+                                    time.sleep(2)
                                     
-                                    # self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
-                                    # time.sleep(2)
-                                    # self.pwm.set_pwm(servoNum, 0, self.servo_max)
-                                    # time.sleep(1)
+                                    self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
+                                    time.sleep(2)
+                                    self.pwm.set_pwm(servoNum, 0, self.servo_max)
+                                    time.sleep(1)
                                     
-                                    # self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
-                                    # time.sleep(2)
+                                    self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
+                                    time.sleep(2)
                                     
                                     ####################################################################################
                                     
                                     # print(f"cur_row: {cur_row}")
                                     # print(f"cur_col: {cur_col}")
-                                    connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+                                    connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
                                     cursor = connection.cursor()
-                                    
+                                                                   
                                     for check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
                                         if check_row == cur_row and check_col == cur_col:
                                             query = f'''
@@ -726,7 +738,10 @@ class SensorThread(QObject):
                                                 connection.commit()
                                     print(selected_items)
                                     
-
+                                    for i, item in enumerate(meal_drug_list):
+                                        if item[0] == cur_col and item[1] == cur_row:
+                                            meal_drug_list[i] = (item[0], item[1], item[2], item[3], item[4], item[5], item[6], 1)
+                                    self.save_meal_drug_list(meal_drug_list)
                                     ####################################################################################                        
                                     col += 1
                                     
@@ -796,14 +811,14 @@ class SensorThread(QObject):
                                     get_drug = False
                                     stay_in_loop = True
                                     while stay_in_loop:           
-                                        dist1 = self.distance()
-                                        time.sleep(0.005)
+                                        # dist1 = self.distance()
+                                        # time.sleep(0.005)
                                         # dist2 = self.distance()
                                         # time.sleep(0.005)
                                         
                                         # print ("Measured Distance = %.1f cm" % dist1)
                                         # print ("Measured Distance 2 = %.1f cm" % dist2)
-                                        self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
+                                        # self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
                                         
                                         
                                         # self.led_blink()
@@ -813,9 +828,14 @@ class SensorThread(QObject):
                                             
                                         #     start_led_time = time.time()
                                             
+                                        # print(f"time.time(): {time.time()}")
+                                        # print(f"audio_time: {audio_time}")
+                                        # print(f"audio_play: {audio_play}")
+                                        # print(f"time.time() - audio_time: {time.time() - audio_time}")
+                                        # print("======================")
                                         
                                         # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
-                                        if time.time() - audio_time >= audio_play and not get_drug:
+                                        if time.time() - audio_time <= audio_play and not get_drug:
                                             # beep_process = multiprocessing.Process(target=self.beep)
                                             # print("beep ~ beep")
                                             # beep_process.start()        #9
@@ -828,8 +848,11 @@ class SensorThread(QObject):
                                         # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
                                         #     get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
                                         
-                                        if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                            get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา                                    
+                                        # if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
+                                        #     get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา                                    
+                                        
+                                        if GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
+                                            get_drug = True   
                                         
                                         # เงื่อนไขการแจ้งเตือนซ้ำ
                                         if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
@@ -857,10 +880,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             bbed_not_receive = True                     
                                             stay_in_loop = False
@@ -869,10 +892,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             bb_not_receive = True                            
                                             stay_in_loop = False
@@ -881,10 +904,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             ab_not_receive = True                                  
                                             stay_in_loop = False
@@ -894,10 +917,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name)  
                                             bl_not_receive = True                               
                                             stay_in_loop = False
@@ -907,10 +930,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             al_not_receive = True                                 
                                             stay_in_loop = False
@@ -920,10 +943,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name)
                                             bd_not_receive = True                                 
                                             stay_in_loop = False
@@ -933,10 +956,10 @@ class SensorThread(QObject):
                                             time.sleep(3)
                                             print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
                                             notify_time = 1
-                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                            # time.sleep(2)
-                                            # self.pwm.set_pwm(15, 0, self.servo_max)
-                                            # time.sleep(1)
+                                            self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            time.sleep(2)
+                                            self.pwm.set_pwm(15, 0, self.servo_max)
+                                            time.sleep(1)
                                             self.not_receive_line(self.channel_access_token, meal_name) 
                                             bd_not_receive = True                             
                                             stay_in_loop = False

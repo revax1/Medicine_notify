@@ -298,7 +298,7 @@ class Ui_each_drug(object):
                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.Yes:
-                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+                connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
                 cursor = connection.cursor()
                 cursor.execute("SELECT drug_id FROM Drug WHERE drug_name = ?", (drug_name,))
                 result = cursor.fetchone()
@@ -369,7 +369,7 @@ class Ui_each_drug(object):
         each_drug2_form.widgetSet(UI_instance.Get(), Ui_each_drug2)
 
     def set_drug_info(self, drug_name):
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM Drug WHERE drug_name = ?", (drug_name,))
         drug_info = cursor.fetchone()

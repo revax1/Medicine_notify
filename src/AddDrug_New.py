@@ -320,7 +320,7 @@ class Ui_Add_drug(object):
             self.saveDrug_pushButton.setEnabled(True)  # <-- เพิ่มบรรทัดนี้
             return  # Do not proceed with saving
         
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         # เช็คว่า drug_name ที่ต้องการเพิ่มมีอยู่แล้วหรือไม่
         cursor.execute("SELECT COUNT(*) FROM Drug WHERE drug_name = ?", (drug_name,))
@@ -440,7 +440,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName("/home/pi/Documents/Medicine_notify/src/medicine.db")
+    db.setDatabaseName("/home/pi/Documents/Medicine_notify/db/medicine.db")
     if not db.open():
         print("Cannot establish a database connection.")
         sys.exit(1)

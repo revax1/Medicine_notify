@@ -306,7 +306,7 @@ class Ui_data_check1(object):
         print(f"data_check1 {self.updated_data2}")
 
         # Fetch meal data for the given drug_id from the database
-        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+        connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
 
         query = '''
