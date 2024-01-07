@@ -14,6 +14,8 @@ class Ui_encrypt_check(object):
         UI_instance.Set(encrypt_check)
         show_widget_fullscreen(encrypt_check)
         
+        self.prepare_state_file = '/home/pi/Documents/Medicine_notify/state/prepare_state.txt'
+        
         self.encrypt_check = encrypt_check
         self.drug_List = drug_list_instance.Get()
         self.each_drug = each_drug_instance.Get()
@@ -237,6 +239,7 @@ class Ui_encrypt_check(object):
                 connection.commit()
                 QtWidgets.QMessageBox.information(encrypt_check, "Success", "ข้อมูลถูกบันทึกเรียบร้อยแล้ว")
                 # QtWidgets.QMessageBox.information.setStyleSheet("background-color: rgb(255, 255, 255);")
+                self.save_prepare_state(False)        # ให้เตรียมยาใหม่ทุกครั้งที่เพิ่มยาชุดใหม่
                 from drug_List import Ui_drug_List
                 homepage_form = UI_Genarate()
                 homepage_form.widgetSet(UI_instance.Get(), Ui_drug_List)
@@ -270,6 +273,11 @@ class Ui_encrypt_check(object):
             "color: rgb(255, 255, 255);\n"
             "background-color: rgb(85, 170, 127);"
         )
+        
+    def save_prepare_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.prepare_state_file, 'w') as f:
+            f.write(prepare_str)
 
     # def closeAll(self):
     #     self.each_drug.closeAll()

@@ -538,7 +538,7 @@ class SensorThread(QObject):
         after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
         before_sleep = meal_times.get("มื้อก่อนนอน", "")
         
-        print(meal_times)
+        # print(meal_times)
         
         if not before_breakfast == "":
             before_breakfast_seconds = time_to_seconds(before_breakfast)
@@ -589,13 +589,13 @@ class SensorThread(QObject):
                     for check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
                         if check_col == cur_col and check_row == cur_row:
                             selected_items.append((check_col, check_row, drug_id, drug_name, meal_id, meal_name, meal_time))
-                    print(selected_items)
+                    # print(selected_items)
                     
                     cur_meal_name = selected_items[-1][5]
                     cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
                     
-                    print(f"cur_meal_name: {cur_meal_name}")
-                    print(f"cur_meal_time: {cur_meal_time}")
+                    # print(f"cur_meal_name: {cur_meal_name}")
+                    # print(f"cur_meal_time: {cur_meal_time}")
                     # print("=============")    
                     ###############################################################################################################
                     # Access meal times using the meal names
@@ -811,8 +811,8 @@ class SensorThread(QObject):
                                     get_drug = False
                                     stay_in_loop = True
                                     while stay_in_loop:           
-                                        # dist1 = self.distance()
-                                        # time.sleep(0.005)
+                                        dist1 = self.distance()
+                                        time.sleep(0.005)
                                         # dist2 = self.distance()
                                         # time.sleep(0.005)
                                         
@@ -845,14 +845,14 @@ class SensorThread(QObject):
                                             audio_time = time.time()
                                             
                                         
-                                        # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                        #     get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                        # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                        #     get_drug = True                                                          
                                         
-                                        # if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                        #     get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา                                    
+                                        if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะและใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                            get_drug = True                                                                                              
                                         
-                                        if GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                            get_drug = True   
+                                        # if GPIO.input(self.GPIO_PIR):          # motion เซนเซอร์ detect
+                                        #     get_drug = True   
                                         
                                         # เงื่อนไขการแจ้งเตือนซ้ำ
                                         if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
@@ -990,13 +990,13 @@ class SensorThread(QObject):
                                                 self.save_prepare_state(False) 
                                     
                             # เพิ่มเงื่อนไขที่ถ้า col = 3 ให้กลับไปที่ 0
-                            if col == self.max_col - 1:
+                            if col == self.max_col:
                                 col = 0
                                                 
                             row += 1
                             servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปแถวถัดไป
                             
-                            if not row == self.max_row - 1:
+                            if not row == self.max_row:
                                 if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
                                     self.save_state(col, row, servoNum)  # Save the current state
                                 

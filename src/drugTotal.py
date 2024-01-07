@@ -131,7 +131,7 @@ class Ui_drugTotal(object):
         connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/db/medicine.db")
         cursor = connection.cursor()
         cursor.execute('''
-            SELECT drug_name, external_drug, internal_drug, drug_eat FROM Drug 
+            SELECT drug_name, internal_drug, drug_remaining, drug_eat FROM Drug 
         ''')
 
         # Fetch all rows from the result set
@@ -142,11 +142,12 @@ class Ui_drugTotal(object):
 
         # Populate the table with the retrieved data
         for row_num, row_data in enumerate(drug_data):
+            external_drug = row_data[2] - row_data[1]  # Calculate external_drug
             for col_num, col_data in enumerate(row_data):
                 item = QtWidgets.QTableWidgetItem()
-
+                
                 # If calculating for external_drug or internal_drug columns, apply the formula
-                if col_num == 1 or col_num == 2:
+                if col_num == 1:
                     drug_eat = row_data[3]  #  ตรงกับตำแหน่งที่สี่ คือ drug_eat
 
                     # Check for None values before performing multiplication
@@ -155,6 +156,8 @@ class Ui_drugTotal(object):
                         item.setText(f"{col_data} มื้อ ({col_data * drug_eat} เม็ด)")
                     else:
                         item.setText("N/A")  # Or any default value you prefer
+                elif col_num == 2:  # Check if the current column is external_drug
+                    item.setText(f"{int(external_drug)} มื้อ ({external_drug * drug_eat} เม็ด)")
                 else:
                     # For other columns, directly set the text
                     item.setText(str(col_data))
