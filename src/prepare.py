@@ -8,7 +8,7 @@ from UI_Generate import *
 width, height = Scale_Width_Height()
 
 row_max = 5     # แถวของกล่องยา                                  # กำหนดจำนวน row ของยา
-col_max = 8     # จำนวนลูกบอลที่ใส่ได้ในแต่ละแถว                      # กำหนดจำนวน col ของยา
+col_max = 7     # จำนวนลูกบอลที่ใส่ได้ในแต่ละแถว                      # กำหนดจำนวน col ของยา
 current_ball_index = 0
 class CircularColorItem(QtWidgets.QWidget):
     def __init__(self, color, text, parent=None):

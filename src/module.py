@@ -53,7 +53,7 @@ class SensorThread(QObject):
         self.pwm = Adafruit_PCA9685.PCA9685()
         self.servo_min = 150
         self.servo_max = 600
-        self.max_col = 8
+        self.max_col = 7
         self.max_row = 5
         
         self.state_file = '/home/pi/Documents/Medicine_notify/state/servo_state.txt'
@@ -695,15 +695,19 @@ class SensorThread(QObject):
                                     meal_seconds = time_to_seconds(current_time)
                                     self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
                                     self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
-                                    time.sleep(2)
+                                    time.sleep(1)
+                                    self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)         
+                                    time.sleep(1)
                                     
                                     self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
-                                    time.sleep(2)
+                                    time.sleep(1)
                                     self.pwm.set_pwm(servoNum, 0, self.servo_max)
                                     time.sleep(1)
                                     
                                     self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
-                                    time.sleep(2)
+                                    time.sleep(1)
+                                    
+                                    
                                     col += 1
                                     ####################################################################################
                                     
@@ -735,7 +739,7 @@ class SensorThread(QObject):
                                                     '''
                                                 cursor.execute(update_query)
                                                 connection.commit()
-                                    print(selected_items)
+                                    # print(selected_items)
                                     
                                     for i, item in enumerate(meal_drug_list):
                                         if item[0] == cur_col and item[1] == cur_row:
@@ -807,16 +811,11 @@ class SensorThread(QObject):
                                     stay_in_loop = True
                                     while stay_in_loop:           
                                         dist1 = self.distance()
-                                        # time.sleep(0.005)
-                                        # dist2 = self.distance()
-                                        # time.sleep(0.005)
                                         
                                         print ("Measured Distance = %.1f cm" % dist1)
                                         # print ("Measured Distance 2 = %.1f cm" % dist2)
                                         self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
                                         
-                                        
-                                        # self.led_blink()
                                         self.led_blink()
                                         
                                         # if time.time() - start_led_time <= led_play and not get_drug:
@@ -831,9 +830,6 @@ class SensorThread(QObject):
                                         
                                         # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
                                         if not get_drug:
-                                            # beep_process = multiprocessing.Process(target=self.beep)
-                                            # print("beep ~ beep")
-                                            # beep_process.start()        #9
                                             self.beep_audio()
                                             
                                         
@@ -1002,14 +998,14 @@ class SensorThread(QObject):
                             
                         row = 0
                         servoNum = 0
-                        print(cur_col)
-                        print(meal_drug_list[-1][1])
-                        print("=============")
-                        print(cur_row)
-                        print(meal_drug_list[-1][0])
+                        # print(cur_col)
+                        # print(meal_drug_list[-1][1])
+                        # print("=============")
+                        # print(cur_row)
+                        # print(meal_drug_list[-1][0])
                         if cur_col != meal_drug_list[-1][0] or cur_row != meal_drug_list[-1][1]:
                             self.save_state(col, row, servoNum)  # Save the current state
-                            print("hi")
+                            # print("hi")
                         
                         if cur_col == meal_drug_list[-1][0] and cur_row == meal_drug_list[-1][1]:
                             self.save_state(0,0,0)

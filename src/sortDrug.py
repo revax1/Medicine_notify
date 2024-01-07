@@ -12,7 +12,7 @@ import json
 from prepare import Ui_prepare
 
 row_max = 5     # แถวของกล่องยา                                  # กำหนดจำนวน row ของยา
-col_max = 8     # จำนวนลูกบอลที่ใส่ได้ในแต่ละแถว                      # กำหนดจำนวน col ของยา
+col_max = 7     # จำนวนลูกบอลที่ใส่ได้ในแต่ละแถว                      # กำหนดจำนวน col ของยา
 
 class CircularColorItem(QtWidgets.QWidget):
     def __init__(self, color, text, parent=None):
@@ -237,7 +237,7 @@ class Ui_sortDrug(object):
         # กำหนดจำนวนแถวในตารางตามจำนวนรายการยาที่ดึงมาจากฐานข้อมูล
         self.tableWidget.setRowCount(row_max)
 
-        cell_size = 85  # You can adjust this value as needed
+        cell_size = 88  # You can adjust this value as needed
         for col_idx in range(col_max):
             self.tableWidget.setColumnWidth(col_idx, cell_size)
         for row_idx in range(row_max):
