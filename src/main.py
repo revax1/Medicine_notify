@@ -30,6 +30,7 @@ from sortDrug import Ui_sortDrug
 from drugTotal import Ui_drugTotal
 from wifi import Ui_wifi
 from module import SensorThread
+from notify import Ui_notify
 
 import sqlite3
 
@@ -72,7 +73,6 @@ cursor.execute('''
     )
 ''')
 
-# Create Drug_handle table 
 ##################### ใช้ระบุว่า ยาตัวนั้นกินมื้อไหนบ้าง ######################## 
 # ทำตารางนี้มาเพื่อแทนที่ meal_state ซึ่งเป็นการเก็บ state โดยรวม
 cursor.execute('''       
@@ -89,7 +89,7 @@ cursor.execute('''
 connection.commit()      
 ################################################################
 
-class Ui_Medicine_App(object):
+class Ui_Medicine_App(object):    
     def setupUi(self, Medicine_App):
         drug_list_instance.Set(None)
         drug_name_instance.Set(None)
@@ -109,6 +109,9 @@ class Ui_Medicine_App(object):
         
         UI_instance.Set(Medicine_App)
         show_widget_fullscreen(Medicine_App)
+        
+        self.prepare_state_file = 'prepare_state.txt'
+        self.notify_state_file = 'notify_state.txt'
         
         Medicine_App.setObjectName("Medicine_App")
         Medicine_App.resize(int(683 * width), int(400 * height))
@@ -386,10 +389,19 @@ class Ui_Medicine_App(object):
         self.retranslateUi(Medicine_App)
         QtCore.QMetaObject.connectSlotsByName(Medicine_App)
         
+        sensor_thread = SensorThread()
+        sensor_thread.current_time_signal.connect(self.handle_current_time_signal)
+        
+        notify_thread = Ui_notify()
+        # notify_thread.setupUi(QtWidgets.QMainWindow())
+        
         # อัพเดทเวลา
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_time)
-        self.timer.start(1000)
+        # self.timer.timeout.connect(sensor_thread.send_signal_to_main)
+        self.timer.timeout.connect(self.handle_current_time_signal)
+        self.timer.start(1)
+        
         
         # Connect to SQLite database
         self.connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
@@ -466,6 +478,22 @@ class Ui_Medicine_App(object):
         
         self.label.setText(current_time)
         self.label_3.setText(current_date)
+        
+    def handle_current_time_signal(self):
+        get_prepare = self.load_prepare_state()
+        notifypage = self.load_notify_state()
+        if get_prepare:
+            if notifypage:
+                self.save_notify_state(False)
+                print("Signal received in main.py")
+                notify_form = UI_Genarate()
+                notify_form.widgetSet(UI_instance.Get(), Ui_notify)
+                
+                # new_window = QtWidgets.QMainWindow()
+                # ui = Ui_notify()
+                # ui.setupUi(new_window)
+                # new_window.show()
+                self.timer.stop()
 
     ###################### หน้าคลังยา #############################  
     def open_drug_List_page(self):
@@ -478,18 +506,6 @@ class Ui_Medicine_App(object):
         select_time_form = UI_Genarate()
         select_time_form.widgetSet(UI_instance.Get(), Ui_select_time)
         self.timer.stop()
-        
-    # ###################### หน้าวิธีบรรจุยา #############################                                            อันเก่า
-    # def open_pack_page(self):
-    #     self.pack_window = QtWidgets.QMainWindow()
-    #     self.ui_pack = Ui_med_pack()
-    #     self.ui_pack.setupUi(self.pack_window)
-    #     self.pack_window.show()
-        
-    #     def close_pack_window():
-    #         self.pack_window.close()
-            
-    #     self.ui_pack.pack_back_pushButton.clicked.connect(close_pack_window)
         
         ##################### หน้าคำแนะนำการใส่ยา ############################# 
     def open_pack_page(self):
@@ -509,13 +525,34 @@ class Ui_Medicine_App(object):
         drugTotal_form.widgetSet(UI_instance.Get(), Ui_drugTotal)
         self.timer.stop()
 
-
     ##################### หน้าwifi ############################# 
     def open_wifi_page(self):
         wifi_form = UI_Genarate()
         wifi_form.widgetSet(UI_instance.Get(), Ui_wifi)
         self.timer.stop()
+        
+    def load_prepare_state(self):
+        if os.path.exists(self.prepare_state_file):
+            with open(self.prepare_state_file, 'r') as f:
+                content = f.read().strip()
+                state = content == 'True'
+                # print(f'Loaded state: {state}')
+                return state
+        return False
+    
+    def load_notify_state(self):
+        if os.path.exists(self.notify_state_file):
+            with open(self.notify_state_file, 'r') as f:
+                content = f.read().strip()
+                state = content == 'True'
+                # print(f'Loaded state: {state}')
+                return state
+        return False
 
+    def save_notify_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.notify_state_file, 'w') as f:
+            f.write(prepare_str)
 
     def retranslateUi(self, Medicine_App):
         _translate = QtCore.QCoreApplication.translate
@@ -545,5 +582,14 @@ if __name__ == "__main__":
     Medicine_App.show()
     sensor_thread = SensorThread()
     sensor_thread.run_thread()
+    # sensor_thread.current_time_signal.connect(ui.handle_current_time_signal)
+    
+    # ui.timer = QTimer()
+    # ui.timer.timeout.connect(sensor_thread.send_signal_to_main)
+    # ui.timer.start(1)
+    
+    # timer = QTimer()
+    # timer.timeout.connect(sensor_thread.send_signal_to_main)
+    # timer.start(1)
 
     sys.exit(app.exec_())

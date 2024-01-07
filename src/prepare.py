@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 import sqlite3
+import json
 
 from Utils import *
 from UI_Generate import *
@@ -38,6 +39,10 @@ class Ui_prepare(object):
         show_widget_fullscreen(prepare)
         
         self.get_prepare = False
+        self.state_file = 'servo_state.txt'
+        self.prepare_state_file = 'prepare_state.txt'
+        self.meal_drug_list_file = 'meal_drug_list.json'
+        self.meal_drug_list = []
         
         prepare.setObjectName("prepare")
         prepare.resize(683, 400)
@@ -271,7 +276,7 @@ class Ui_prepare(object):
 
     def move_to_next_ball(self):
         # if self.selected_ball_index < (row_max * col_max) - 1:
-        # print(self.slot)
+        print(self.slot)
         if self.slot <= (row_max * col_max):
             connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
             cursor = connection.cursor()
@@ -289,56 +294,67 @@ class Ui_prepare(object):
             drug_info_list = cursor.fetchall()
 
             if drug_info_list:
-                self.check_all = 1
-                # print(f"ลำดับ: {self.slot}, ยา{drug_info_list[0][15]}\n")
-                # print("ประกอบไปด้วย")
                 have_drug = False
-                
-                color_text_mapping = {
-                    (255, 102, 102): {"text": "เช้าก่อน", "enabled": True},    # สีแดง
-                    (255, 178, 102): {"text": "เช้าหลัง", "enabled": True},   # สีส้ม
-                    (255, 255, 102): {"text": "เที่ยงก่อน", "enabled": True},    # สีเหลือง
-                    (178, 255, 102): {"text": "เที่ยงหลัง", "enabled": True},   # สีเขียวอ่อน
-                    (102, 255, 102): {"text": "เย็นก่อน", "enabled": True},   # สีเขียวเข้ม
-                    (102, 255, 255): {"text": "เย็นหลัง", "enabled": True},    # สีฟ้า
-                    (0, 180, 255): {"text": "ก่อนนอน", "enabled": True}    # สีน้ำเงิน
-                }
-
-                color_index = drug_info_list[0][14] - 1
-
-                if color_index < len(color_text_mapping):
-                    color = list(color_text_mapping.keys())[color_index]
-
-                circular_item = CircularColorItem(QtGui.QColor(*color), color_text_mapping[color])
-                self.tableWidget.setCellWidget(self.cursor_col, self.cursor_row, circular_item)
-                
-                # print(drug_info_list)
-                for drug_info in drug_info_list:
-                    drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size, meal_id, meal_name, time = drug_info
+                internal_drugs_empty = all(drug_info[7] == 0 for drug_info in drug_info_list)
+                if not all(drug_info[6] == 0 for drug_info in drug_info_list) or not all(drug_info[7] == 0 for drug_info in drug_info_list):
+                    print("============")
+                    for drug_info in drug_info_list:
+                        
+                        print(f"external:{drug_info[6]}")
+                        print(f"internal:{drug_info[7]}")
+                        print("===============")
                     
-                    if external_drug != 0:
-                        # print(f"- {drug_name}")
-                        self.listWidget.addItem(f"- {drug_name}")
-                        # self.listWidget.clear()
+                    # if not all_drugs_empty or not internal_drugs_empty:
+                    self.check_all = 1
+                    # print(f"ลำดับ: {self.slot}, ยา{drug_info_list[0][15]}\n")
+                    # print("ประกอบไปด้วย")
+                    
+                    color_text_mapping = {
+                        (255, 102, 102): {"text": "เช้าก่อน", "enabled": True},    # สีแดง
+                        (255, 178, 102): {"text": "เช้าหลัง", "enabled": True},   # สีส้ม
+                        (255, 255, 102): {"text": "เที่ยงก่อน", "enabled": True},    # สีเหลือง
+                        (178, 255, 102): {"text": "เที่ยงหลัง", "enabled": True},   # สีเขียวอ่อน
+                        (102, 255, 102): {"text": "เย็นก่อน", "enabled": True},   # สีเขียวเข้ม
+                        (102, 255, 255): {"text": "เย็นหลัง", "enabled": True},    # สีฟ้า
+                        (0, 180, 255): {"text": "ก่อนนอน", "enabled": True}    # สีน้ำเงิน
+                    }
+
+                    color_index = drug_info_list[0][14] - 1
+
+                    if color_index < len(color_text_mapping):
+                        color = list(color_text_mapping.keys())[color_index]
+
+                    circular_item = CircularColorItem(QtGui.QColor(*color), color_text_mapping[color])
+                    self.tableWidget.setCellWidget(self.cursor_col, self.cursor_row, circular_item)
+                    
+                    # print(drug_info_list)
+                    for drug_info in drug_info_list:
+                        drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size, meal_id, meal_name, time = drug_info
                         
-                        # print(f"    มื้อยานอกเครื่อง:{external_drug} (ก่อน update)")
-                        # print(f"    มื้อยาในเครื่อง:{internal_drug} (ก่อน update)")
-                        # print("-----------------------")
-                        
-                        external_drug -= 1
-                        internal_drug += 1
-                        
-                        cursor.execute(f"UPDATE Drug SET external_drug = {external_drug}, internal_drug = {internal_drug} WHERE drug_id = {drug_id}")
-                        connection.commit()
-                        
-                        # print(f"    มื้อยานอกเครื่อง:{external_drug} (หลัง update)")
-                        # print(f"    มื้อยาในเครื่อง:{internal_drug} (หลัง update)")
-                        
-                        have_drug = True
-                        
-                    else:
-                        # print("     หมด")
-                        pass
+                        if external_drug != 0:
+                            # print(f"- {drug_name}")
+                            self.listWidget.addItem(f"- {drug_name}")
+                            # self.listWidget.clear()
+                            
+                            # print(f"    มื้อยานอกเครื่อง:{external_drug} (ก่อน update)")
+                            # print(f"    มื้อยาในเครื่อง:{internal_drug} (ก่อน update)")
+                            # print("-----------------------")
+                            
+                            external_drug -= 1
+                            internal_drug += 1
+                            
+                            cursor.execute(f"UPDATE Drug SET external_drug = {external_drug}, internal_drug = {internal_drug} WHERE drug_id = {drug_id}")
+                            connection.commit()
+                            
+                            # print(f"    มื้อยานอกเครื่อง:{external_drug} (หลัง update)")
+                            # print(f"    มื้อยาในเครื่อง:{internal_drug} (หลัง update)")
+                            
+                            have_drug = True
+                            self.meal_drug_list.append((self.cursor_row,self.cursor_col, drug_id, drug_name, meal_id, meal_name, time, 0))
+                        else:
+                            # print("     หมด")
+                            pass
+                    
                         
                 query = '''
                 SELECT  h.drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, drug_new, drug_size,
@@ -364,7 +380,7 @@ class Ui_prepare(object):
                 else:
                     # print("ยังมียาที่ยังไม่หมด")
                     pass
-                    
+
                 # print("============================================================================")
                 
                 if have_drug:                                           # เช็คว่ามียาไหม
@@ -382,38 +398,65 @@ class Ui_prepare(object):
                 self.check_meal += 1
                 
                 if not have_drug:
-                    self.move_to_next_ball()
-                    return
+                    if not all_drugs_empty or not internal_drugs_empty:
+                        self.move_to_next_ball()
+                    # return
             
-            else:
-                self.check_meal += 1
+            if not drug_info_list:                
                 if self.check_all == 7:
                     QtWidgets.QMessageBox.warning(self.centralwidget, "คำเตือน", "ไม่พบข้อมูลยา กรุณาเพิ่มยาและกดยาที่ต้องการ ในหน้าคลังยาเพื่อตั้งค่ามื้อยา")
                     from main import Ui_Medicine_App
                     backpage_form = UI_Genarate()
                     backpage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
                     return
-                
+                self.check_meal += 1
                 self.check_all += 1
+                if self.check_meal > 7:
+                    self.check_meal = 1
+                   
                 self.move_to_next_ball()
-                return   
+                return
                 
-            if self.check_meal == 7:
+            if self.check_meal > 7:
                 self.check_meal = 1
                 
             if self.slot > (row_max * col_max):
                 self.next_pushButton.setText("เสร็จสิ้น")
+                
+            if all_drugs_empty and internal_drugs_empty:
+                QtWidgets.QMessageBox.warning(self.centralwidget, "คำเตือน", "กรุณาเติมยาในหน้าคลังยาเพื่อดำเนินการต่อ")
+                from main import Ui_Medicine_App
+                backpage_form = UI_Genarate()
+                backpage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
             
+            print(f"all_drugs_empty: {all_drugs_empty}")
+            print(f"internal_drugs_empty: {internal_drugs_empty}")
             connection.close()
-            
+            meal_drug_list_instance.Set(self.meal_drug_list)
+            self.save_meal_drug_list(self.meal_drug_list)
             # print(self.selected_ball_index)
             # self.update_ball_colors()
         else:
             # กลับไปหน้า sortDrug
             self.get_prepare = True
             prepare_instance.Set(self.get_prepare)
-            
+            self.save_state(0,0,0)
+            self.save_prepare_state(self.get_prepare)
             self.backpage()
+            
+    def save_state(self, col, row, servoNum):
+        with open(self.state_file, 'w') as f:
+            f.write(f'{col},{row},{servoNum}')
+            
+    def save_prepare_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.prepare_state_file, 'w') as f:
+            f.write(prepare_str)
+            
+    def save_meal_drug_list(self, prepare_list):
+        prepare_str = json.dumps(prepare_list, ensure_ascii=False)
+        with open(self.meal_drug_list_file, 'w', encoding='utf-8') as f:
+            f.write(prepare_str)
 
     def setup_table_widget(self):
         # สร้างและกำหนด QTableWidget

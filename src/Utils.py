@@ -267,3 +267,15 @@ class prepare_Data:
         self._value = new_value
         
 prepare_instance = prepare_Data()
+
+class meal_drug_list_Data:
+    def __init__(self):
+        self._value = None
+
+    def Get(self):
+        return self._value
+
+    def Set(self, new_value):
+        self._value = new_value
+
+meal_drug_list_instance = meal_drug_list_Data()

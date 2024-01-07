@@ -38,7 +38,9 @@ class Ui_sortDrug(object):
         UI_instance.Set(sortDrug)
         show_widget_fullscreen(sortDrug)
         
-        self.get_prepare = prepare_instance.Get()      # เช็คว่าเตรียมยาแล้วรึยีง
+        self.prepare_state_file = 'prepare_state.txt'
+        
+        self.get_prepare = self.load_prepare_state()      # เช็คว่าเตรียมยาแล้วรึยีง
 
         sortDrug.setObjectName("sortDrug")
         sortDrug.resize(int(683 * width), int(400 * height))
@@ -168,6 +170,7 @@ class Ui_sortDrug(object):
         backpage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
 
     def open_prepare(self):
+        self.save_prepare_state(False)
         backpage_form = UI_Genarate()
         backpage_form.widgetSet(UI_instance.Get(), Ui_prepare)
 
@@ -232,6 +235,20 @@ class Ui_sortDrug(object):
             self.tableWidget.setColumnWidth(col_idx, cell_size)
         for row_idx in range(row_max):
             self.tableWidget.setRowHeight(row_idx, cell_size)
+            
+    def load_prepare_state(self):
+        if os.path.exists(self.prepare_state_file):
+            with open(self.prepare_state_file, 'r') as f:
+                content = f.read().strip()
+                state = content == 'True'
+                # print(f'Loaded state: {state}')
+                return state
+        return False
+    
+    def save_prepare_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.prepare_state_file, 'w') as f:
+            f.write(prepare_str)
 
     def sort_handle(self):
         if self.get_prepare:
@@ -249,7 +266,6 @@ class Ui_sortDrug(object):
             cursor.execute(query)
             drug_info_list = cursor.fetchall()
             
-
             for drug_info in drug_info_list:
                 drug_id, drug_name, drug_description, drug_remaining, drug_remaining_meal, fraction, external_drug, internal_drug, drug_eat, all_drug_recieve, day_start, drug_log, meal_id, meal_name, time = drug_info
 
@@ -330,7 +346,7 @@ class Ui_sortDrug(object):
                     }
 
                     color_index = drug_info_list[0][14] - 1
-                    print(color_index)
+                    # print(color_index)
                     if color_index < len(color_text_mapping):
                         color = list(color_text_mapping.keys())[color_index]
 

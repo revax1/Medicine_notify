@@ -19,10 +19,12 @@ import requests
 import pygame
 
 import sqlite3
+import json
 
 ########################### Thread ###########################
 class SensorThread(QObject):
     finished = pyqtSignal()
+    current_time_signal = pyqtSignal(bool)
     
     def __init__(self, parent=None):
         
@@ -48,16 +50,20 @@ class SensorThread(QObject):
         GPIO.setup(self.GPIO_PIR, GPIO.IN)
         GPIO.setup(self.led_pin, GPIO.OUT)
         
-        self.pwm = Adafruit_PCA9685.PCA9685()
+        # self.pwm = Adafruit_PCA9685.PCA9685()
         self.servo_min = 90
         self.servo_max = 570
-        self.max_col = 2
+        self.max_col = 8
         self.max_row = 5
         
         self.state_file = 'servo_state.txt'
+        self.prepare_state_file = 'prepare_state.txt'
+        self.main_state_file = 'main_state.txt'
+        self.notify_state_file = 'notify_state.txt'
+        self.meal_drug_list_file = 'meal_drug_list.json'
         
         # Set frequency to 60hz, good for servos.
-        self.pwm.set_pwm_freq(60)
+        # self.pwm.set_pwm_freq(60)
         
     ####################### สำหรับ Ultrasonic Sensor ########################
 
@@ -107,9 +113,40 @@ class SensorThread(QObject):
             with open(self.state_file, 'r') as f:
                 content = f.read().split(',')
                 state = (int(content[0]), int(content[1]), int(content[2]))
-                print(f'Loaded state: {state[0]},{state[1]},{state[2]}')
+                # print(f'Loaded state: {state[0]},{state[1]},{state[2]}')
                 return state
         return 0, 0, 0  # default values if the file doesn't exist
+    
+    def load_prepare_state(self):
+        if os.path.exists(self.prepare_state_file):
+            with open(self.prepare_state_file, 'r') as f:
+                content = f.read().strip()
+                state = content == 'True'
+                # print(f'Loaded state: {state}')
+                return state
+        return False
+    
+    def save_prepare_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.prepare_state_file, 'w') as f:
+            f.write(prepare_str)
+    
+    def save_main_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.main_state_file, 'w') as f:
+            f.write(prepare_str)
+            
+    def save_notify_state(self, prepare):
+        prepare_str = 'True' if prepare else 'False'
+        with open(self.notify_state_file, 'w') as f:
+            f.write(prepare_str)
+            
+    def load_meal_drug_list(self):
+        if os.path.exists(self.meal_drug_list_file):
+                with open(self.meal_drug_list_file, 'r', encoding='utf-8') as f:
+                    content = json.load(f)
+                    return content
+        return []
 
     ############################# สำหรับ Audio ##############################
 
@@ -152,6 +189,7 @@ class SensorThread(QObject):
         # Clean up Pygame
         pygame.mixer.quit()
         pygame.quit()
+        
 
     def fg_bb(self):
         # Initialize Pygame
@@ -309,10 +347,11 @@ class SensorThread(QObject):
         # print("Waiting for sensor to settle")
 
         if GPIO.input(self.GPIO_PIR):              # Check whether pir is HIGH
-            print("Motion Detected!")
+            # print("Motion Detected!")
+            pass
         else:
-            print("No Motion Detected!")
-            # pass
+            # print("No Motion Detected!")
+            pass
 
     ############################ LED #######################################
 
@@ -424,11 +463,21 @@ class SensorThread(QObject):
         connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
         cursor = connection.cursor()
 
-        cursor.execute("SELECT meal_name, time FROM Meal")
+        # cursor.execute("SELECT meal_name, time FROM Meal")
+        cursor.execute('''SELECT m.meal_name, m.time FROM Meal AS m
+                        JOIN Drug_handle AS h ON m.meal_id = h.meal_id
+                        WHERE h.meal_id''')
+        
         drugs = cursor.fetchall()
 
-        meal_times = dict(drugs)
+        meal_times = {}
+        for meal_name, time_str in drugs:
+            # แปลงเวลาจากฐานข้อมูลให้อยู่ในรูปแบบที่ต้องการ
+            time_obj = datetime.strptime(time_str, "%H:%M")
+            time_formatted = time_obj.strftime("%H:%M:%S")
+            meal_times[meal_name] = time_formatted
 
+        # print(meal_times)
         connection.close()
 
         return meal_times
@@ -436,6 +485,7 @@ class SensorThread(QObject):
     ########################################################################
     
     def run(self):
+        
         def time_to_seconds(time_str):
             # แปลงข้อความวันที่เป็นวัตถุเวลา
             time_obj = datetime.strptime(time_str, "%H:%M:%S")
@@ -443,7 +493,6 @@ class SensorThread(QObject):
             seconds = (time_obj - datetime(time_obj.year, time_obj.month, time_obj.day)).total_seconds()
             return seconds
         
-        meal_times = self.load_meal_times_from_database()
         
         def update_meal_seconds():
             while True:
@@ -453,8 +502,6 @@ class SensorThread(QObject):
 
         update_thread = threading.Thread(target=update_meal_seconds)
         update_thread.start()
-        
-        # meal_times = self.load_meal_times_from_database()
 
         GPIO.output(self.led_pin, GPIO.LOW)
         
@@ -465,40 +512,55 @@ class SensorThread(QObject):
         bd_not_receive = False
         ad_not_receive = False
         bbed_not_receive = False
-
-        before_breakfast = "07:00:00"
-        after_breakfast = "07:30:00"
-        before_lunch = "12:00:00"
-        after_lunch = "12:30:00"
-        before_dinner = "18:00:00"
-        after_dinner = "18:30:00"
-        before_sleep = "21:00:00"
         
-        before_breakfast_seconds = time_to_seconds(before_breakfast)
-        after_breakfast_seconds = time_to_seconds(after_breakfast)
-        before_lunch_seconds = time_to_seconds(before_lunch)
-        after_lunch_seconds = time_to_seconds(after_lunch)
-        before_dinner_seconds = time_to_seconds(before_dinner)
-        after_dinner_seconds = time_to_seconds(after_dinner)
-        before_sleep_seconds = time_to_seconds(before_sleep)
-
-        # แสดงผลลัพธ์
-        # print(f"Before Breakfast: {before_breakfast_seconds} seconds")
-        # print(f"After Breakfast: {after_breakfast_seconds} seconds")
-        # print(f"Before Lunch: {before_lunch_seconds} seconds")
-        # print(f"After Lunch: {after_lunch_seconds} seconds")
-        # print(f"Before Dinner: {before_dinner_seconds} seconds")
-        # print(f"After Dinner: {after_dinner_seconds} seconds")
-        # print(f"Before Sleep: {before_sleep_seconds} seconds")
-
-        # # Access meal times using the meal names
-        # before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
-        # after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
-        # before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
-        # after_lunch = meal_times.get("มื้อเที่ยง หลังอาหาร", "")
-        # before_dinner = meal_times.get("มื้อเย็น ก่อนอาหาร", "")
-        # after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
-        # before_sleep = meal_times.get("มื้อก่อนนอน", "")
+        before_breakfast_seconds = 99999.0
+        after_breakfast_seconds = 99999.0
+        before_lunch_seconds = 99999.0
+        after_lunch_seconds = 99999.0
+        before_dinner_seconds = 99999.0
+        after_dinner_seconds = 99999.0
+        before_sleep_seconds = 99999.0
+        
+        before_breakfast_time = False
+        after_breakfast_time = False
+        before_lunch_time = False
+        after_lunch_time = False
+        before_dinner_time = False
+        after_dinner_time = False
+        before_sleep_time = False
+        
+        meal_times = self.load_meal_times_from_database()
+        
+        # Access meal times using the meal names
+        before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
+        after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
+        before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
+        after_lunch = meal_times.get("มื้อเที่ยง หลังอาหาร", "")
+        before_dinner = meal_times.get("มื้อเย็น ก่อนอาหาร", "")
+        after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
+        before_sleep = meal_times.get("มื้อก่อนนอน", "")
+        
+        if not before_breakfast == "":
+            before_breakfast_seconds = time_to_seconds(before_breakfast)
+            before_breakfast_time = True
+        if not after_breakfast == "":    
+            after_breakfast_seconds = time_to_seconds(after_breakfast)
+            after_breakfast_time = True
+        if not before_lunch == "":
+            before_lunch_seconds = time_to_seconds(before_lunch)
+            before_lunch_time = True
+        if not after_lunch == "":
+            after_lunch_seconds = time_to_seconds(after_lunch)
+            after_lunch_time = True
+        if not before_dinner == "":
+            before_dinner_seconds = time_to_seconds(before_dinner)
+            before_dinner_time = True
+        if not after_dinner == "":
+            after_dinner_seconds = time_to_seconds(after_dinner)
+            after_dinner_time = True
+        if not before_sleep == "":
+            before_sleep_seconds = time_to_seconds(before_sleep)
+            before_sleep_time = True
         
         # รัน Process แบบ Multiprocessing    
         web_server_thread = threading.Thread(target=self.server)
@@ -514,319 +576,419 @@ class SensorThread(QObject):
         
         try:
             while True:
+                self.get_prepare = self.load_prepare_state()
+                # print(self.get_prepare)
+                if self.get_prepare:
+                    #################################################################################################################
+                    meal_times = self.load_meal_times_from_database()
+                    meal_drug_list = self.load_meal_drug_list()
+                    
+                    selected_items = []
+                    cur_row, cur_col, servoNum = self.load_state()
+
+                    for check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+                        if check_row == cur_row and check_col == cur_col:
+                            selected_items.append((check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time))
+                    # print(selected_items)
+                    
+                    cur_meal_name = selected_items[-1][5]
+                    cur_meal_time = meal_times.get(f"{cur_meal_name}", "")
+                    # print(cur_meal_name)
+                    # print(cur_meal_time)
+                    # print("=============")    
+                    ###############################################################################################################
+                    # Access meal times using the meal names
+                    before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
+                    after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
+                    before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
+                    after_lunch = meal_times.get("มื้อเที่ยง หลังอาหาร", "")
+                    before_dinner = meal_times.get("มื้อเย็น ก่อนอาหาร", "")
+                    after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
+                    before_sleep = meal_times.get("มื้อก่อนนอน", "")
+                    
+                    if not before_breakfast == "":
+                        before_breakfast_seconds = time_to_seconds(before_breakfast)
+                        before_breakfast_time = True
+                    if not after_breakfast == "":    
+                        after_breakfast_seconds = time_to_seconds(after_breakfast)
+                        after_breakfast_time = True
+                    if not before_lunch == "":
+                        before_lunch_seconds = time_to_seconds(before_lunch)
+                        before_lunch_time = True
+                    if not after_lunch == "":
+                        after_lunch_seconds = time_to_seconds(after_lunch)
+                        after_lunch_time = True
+                    if not before_dinner == "":
+                        before_dinner_seconds = time_to_seconds(before_dinner)
+                        before_dinner_time = True
+                    if not after_dinner == "":
+                        after_dinner_seconds = time_to_seconds(after_dinner)
+                        after_dinner_time = True
+                    if not before_sleep == "":
+                        before_sleep_seconds = time_to_seconds(before_sleep)
+                        before_sleep_time = True
             
-                # Move servo on channel O between extremes.
-                now = datetime.now()
-                current_time = now.strftime("%H:%M:%S")
-                current_day = now.strftime("%A")  # Get the current day of the week
-                # print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
-                
-                if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
-                    meal_seconds = time_to_seconds(current_time)
-                    self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
-                    col, row, servoNum = self.load_state()
-                    while row < self.max_row:
-                        while col < self.max_col:  
-                            now = datetime.now()
-                            current_time = now.strftime("%H:%M:%S")
-                            current_day = now.strftime("%A")  # Get the current day of the week
-                            # print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
-                            
-                            if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
-                                meal_seconds = time_to_seconds(current_time)
-                                self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
-                                self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
-                                time.sleep(2)
+                    # Move servo on channel O between extremes.
+                    now = datetime.now()
+                    current_time = now.strftime("%H:%M:%S")
+                    # print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
+                    
+                    if current_time == cur_meal_time:
+                        meal_seconds = time_to_seconds(current_time)
+                        self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
+                        col, row, servoNum = self.load_state()
+                        while row < self.max_row:
+                            while col < self.max_col:
                                 
-                                self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
-                                time.sleep(2)
-                                self.pwm.set_pwm(servoNum, 0, self.servo_max)
-                                time.sleep(1)
+                                meal_times = self.load_meal_times_from_database()
+            
+                                # Access meal times using the meal names
+                                before_breakfast = meal_times.get("มื้อเช้า ก่อนอาหาร", "")
+                                after_breakfast = meal_times.get("มื้อเช้า หลังอาหาร", "")
+                                before_lunch = meal_times.get("มื้อเที่ยง ก่อนอาหาร", "")
+                                after_lunch = meal_times.get("มื้อเที่ยง หลังอาหาร", "")
+                                before_dinner = meal_times.get("มื้อเย็น ก่อนอาหาร", "")
+                                after_dinner = meal_times.get("มื้อเย็น หลังอาหาร", "")
+                                before_sleep = meal_times.get("มื้อก่อนนอน", "")
                                 
-                                self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
-                                time.sleep(2)
+                                if not before_breakfast == "":
+                                    before_breakfast_seconds = time_to_seconds(before_breakfast)
+                                    before_breakfast_time = True
+                                if not after_breakfast == "":    
+                                    after_breakfast_seconds = time_to_seconds(after_breakfast)
+                                    after_breakfast_time = True
+                                if not before_lunch == "":
+                                    before_lunch_seconds = time_to_seconds(before_lunch)
+                                    before_lunch_time = True
+                                if not after_lunch == "":
+                                    after_lunch_seconds = time_to_seconds(after_lunch)
+                                    after_lunch_time = True
+                                if not before_dinner == "":
+                                    before_dinner_seconds = time_to_seconds(before_dinner)
+                                    before_dinner_time = True
+                                if not after_dinner == "":
+                                    after_dinner_seconds = time_to_seconds(after_dinner)
+                                    after_dinner_time = True
+                                if not before_sleep == "":
+                                    before_sleep_seconds = time_to_seconds(before_sleep)
+                                    before_sleep_time = True
                                 
-                                # for i in range(0, 2048, 100):               # หมุน 180 องศา
-                                #     self.pwm.set_pwm(servoNum + 1, 0, i)
+                                now = datetime.now()
+                                current_time = now.strftime("%H:%M:%S")
+                                # print(f"ขณะนี้เวลา: {current_time}, วัน: {current_day}")
+                                
+                                
+                                if current_time == cur_meal_time:
+                                    self.save_notify_state(True)
                                     
-                                # time.sleep(3)
+                                    meal_seconds = time_to_seconds(current_time)
+                                    self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
+                                    # self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
+                                    # time.sleep(2)
+                                    
+                                    # self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
+                                    # time.sleep(2)
+                                    # self.pwm.set_pwm(servoNum, 0, self.servo_max)
+                                    # time.sleep(1)
+                                    
+                                    # self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
+                                    # time.sleep(2)
+                                    
+                                    ####################################################################################
+                                    
+                                    # print(f"cur_row: {cur_row}")
+                                    # print(f"cur_col: {cur_col}")
+                                    connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+                                    cursor = connection.cursor()
+                                    
+                                    for check_row, check_col, drug_id, drug_name, meal_id, meal_name, meal_time, state in meal_drug_list:
+                                        if check_row == cur_row and check_col == cur_col:
+                                            query = f'''
+                                                SELECT drug_remaining, drug_remaining_meal, internal_drug, drug_eat
+                                                    FROM Drug
+                                                    WHERE drug_id = {drug_id}
+                                                '''
+                                            cursor.execute(query)   
+                                            drug_info_list = cursor.fetchall()
+                                            if drug_info_list:
+                                                drug_remaining, drug_remaining_meal, internal_drug, drug_eat = drug_info_list[0]
+                                                internal_drug -= 1
+                                                drug_remaining -= drug_eat
+                                                drug_remaining_meal = drug_remaining / drug_eat
+                                                update_query = f'''
+                                                    UPDATE Drug
+                                                    SET drug_remaining = {drug_remaining},
+                                                        drug_remaining_meal = {drug_remaining_meal},
+                                                        internal_drug = {internal_drug}
+                                                    WHERE drug_id = {drug_id}
+                                                    '''
+                                                cursor.execute(update_query)
+                                                connection.commit()
+                                    print(selected_items)
+                                    
 
-                                # # หรือถ้าต้องการหมุนทีละขั้นต่อๆ ก็สามารถใช้ลูปเพื่อควบคุมได้
-                                # for i in range(0, 2048, 100):               # หมุน 180 องศา
-                                #     self.pwm.set_pwm(servoNum, 0, i)
-
-                                # time.sleep(3)
-
-                                # for i in range(2048, -1, -100):               # หมุน 180 องศา
-                                #     self.pwm.set_pwm(servoNum, 0, i)
+                                    ####################################################################################                        
+                                    col += 1
                                     
-                                # time.sleep(3)
-                                    
-                                # for i in range(2048, -1, -100):               # หมุน 180 องศา
-                                #     self.pwm.set_pwm(servoNum + 1, 0, i)
-                                                                    
-                                col += 1
-                                
-                                if current_time == before_breakfast:
-                                    meal_name = "มื้อเช้า ก่อนอาหาร"
-                                elif current_time == after_breakfast:
-                                    meal_name = "มื้อเช้า หลังอาหาร"
-                                elif current_time == before_lunch:
-                                    meal_name = "มื้อเช้า หลังอาหาร"
-                                elif current_time == after_lunch:
-                                    meal_name = "มื้อเช้า หลังอาหาร"
-                                elif current_time == before_dinner:
-                                    meal_name = "มื้อเช้า หลังอาหาร"
-                                elif current_time == after_dinner:
-                                    meal_name = "มื้อเช้า หลังอาหาร"
-                                elif current_time == before_sleep:
-                                    meal_name = "มื้อเช้า หลังอาหาร"
-                                    
-                                self.get_drug_line(self.channel_access_token, meal_name)            # รับยา
-                                self.get_drug()
-                                
-                                if bb_not_receive:
-                                    print("ท่านลืมกินยามื้อ (เช้าก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (แดง) ในช่อง ยาลืมกิน")     #2
-                                    bb_not_receive = False
-                                    self.fg_bb()
-                                elif ab_not_receive:
-                                    print("ท่านลืมกินยามื้อ (เช้าหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (ส้ม) ในช่อง ยาลืมกิน")      #3
-                                    time.sleep(10)
-                                    ab_not_receive = False
-                                    self.fg_ab()
-                                elif bl_not_receive:
-                                    print("ท่านลืมกินยามื้อ (เที่ยงก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (เหลือง) ในช่อง ยาลืมกิน")  #4
-                                    time.sleep(10)
-                                    bl_not_receive = False
-                                    self.fg_bl()
-                                elif al_not_receive:
-                                    print("ท่านลืมกินยามื้อ (เที่ยงหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (เขียวอ่อน) ในช่อง ยาลืมกิน")    #5
-                                    time.sleep(10)
-                                    al_not_receive = False
-                                    self.fg_al()
-                                elif bd_not_receive:
-                                    print("ท่านลืมกินยามื้อ (เย็นก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (เขียวเข้ม) ในช่อง ยาลืมกิน")     #6
-                                    bd_not_receive = False
-                                    self.fg_bd()
-                                elif ad_not_receive:
-                                    print("ท่านลืมกินยามื้อ (เย็นหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (ฟ้า) ในช่อง ยาลืมกิน")      #7
-                                    ad_not_receive = False
-                                    self.fg_ad()
-                                elif bbed_not_receive:
-                                    print("ท่านลืมกินยามื้อ (ก่อนนอน) ยาที่ลืมอยู่ในบอลสี (น้ำเงิน) ในช่อง ยาลืมกิน")     #8
-                                    bbed_not_receive = False
-                                    self.fg_ad()
-                                
-                                # Line
-                                start_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
-                                notify_time = 1                     # จำนวนครั้งการแจ้งเตือนไลน์
-                                notify_second = 300                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
-                                max_replay_notify = 4               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
-                                
-                                # ไฟล์เสียง beep
-                                audio_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะการเล่นไฟล์เสียง
-                                audio_play = 3                      # เล่นไฟล์ใน 3 วินาที
-                                
-                                # ระยะจากคนและกล่องจ่ายยา (cm)
-                                range_user = 50                     # ระยะจากผู้ใช้กับตัวกล่องยา
-                                
-                                
-                                get_drug = False
-                                stay_in_loop = True
-                                while stay_in_loop:           
-                                    dist1 = self.distance()
-                                    time.sleep(0.005)
-                                    # dist2 = self.distance()
-                                    # time.sleep(0.005)
-                                    
-                                    print ("Measured Distance = %.1f cm" % dist1)
-                                    # print ("Measured Distance 2 = %.1f cm" % dist2)
-                                    self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
-                                    
-                                    
-                                    # self.led_blink()
-                                    self.led_blink()
-                                    
-                                    # if time.time() - start_led_time <= led_play and not get_drug:
+                                    if current_time == before_breakfast:
+                                        meal_name = "มื้อเช้า ก่อนอาหาร"
+                                    elif current_time == after_breakfast:
+                                        meal_name = "มื้อเช้า หลังอาหาร"
+                                    elif current_time == before_lunch:
+                                        meal_name = "มื้อเที่ยง ก่อนอาหาร"
+                                    elif current_time == after_lunch:
+                                        meal_name = "มื้อเที่ยง หลังอาหาร"
+                                    elif current_time == before_dinner:
+                                        meal_name = "มื้อเย็น ก่อนอาหาร"
+                                    elif current_time == after_dinner:
+                                        meal_name = "มื้อเย็น หลังอาหาร"
+                                    elif current_time == before_sleep:
+                                        meal_name = "มื้อก่อนนอน"
                                         
-                                    #     start_led_time = time.time()
-                                        
+                                    self.get_drug_line(self.channel_access_token, meal_name)            # รับยา
+                                    self.get_drug()
                                     
-                                    # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
-                                    if time.time() - audio_time >= audio_play and not get_drug:
-                                        # beep_process = multiprocessing.Process(target=self.beep)
-                                        print("beep ~ beep")
-                                        # beep_process.start()        #9
-                                        self.beep_audio()
-                                        
-                                        # start_led_time = time.time()
-                                        audio_time = time.time()
-                                        
+                                    if bb_not_receive:
+                                        print("ท่านลืมกินยามื้อ (เช้าก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (แดง) ในช่อง ยาลืมกิน")     #1
+                                        bb_not_receive = False
+                                        self.fg_bb()
+                                    elif ab_not_receive:
+                                        print("ท่านลืมกินยามื้อ (เช้าหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (ส้ม) ในช่อง ยาลืมกิน")      #2
+                                        time.sleep(10)
+                                        ab_not_receive = False
+                                        self.fg_ab()
+                                    elif bl_not_receive:
+                                        print("ท่านลืมกินยามื้อ (เที่ยงก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (เหลือง) ในช่อง ยาลืมกิน")  #3
+                                        time.sleep(10)
+                                        bl_not_receive = False
+                                        self.fg_bl()
+                                    elif al_not_receive:
+                                        print("ท่านลืมกินยามื้อ (เที่ยงหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (เขียวอ่อน) ในช่อง ยาลืมกิน")    #4
+                                        time.sleep(10)
+                                        al_not_receive = False
+                                        self.fg_al()
+                                    elif bd_not_receive:
+                                        print("ท่านลืมกินยามื้อ (เย็นก่อนอาหาร) ยาที่ลืมอยู่ในบอลสี (เขียวเข้ม) ในช่อง ยาลืมกิน")     #5
+                                        bd_not_receive = False
+                                        self.fg_bd()
+                                    elif ad_not_receive:
+                                        print("ท่านลืมกินยามื้อ (เย็นหลังอาหาร) ยาที่ลืมอยู่ในบอลสี (ฟ้า) ในช่อง ยาลืมกิน")      #6
+                                        ad_not_receive = False
+                                        self.fg_ad()
+                                    elif bbed_not_receive:
+                                        print("ท่านลืมกินยามื้อ (ก่อนนอน) ยาที่ลืมอยู่ในบอลสี (น้ำเงิน) ในช่อง ยาลืมกิน")     #7
+                                        bbed_not_receive = False
+                                        self.fg_ad()
                                     
-                                    # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                    #     get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                    # Line
+                                    start_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะเวลา 5 นาที
+                                    notify_time = 1                     # จำนวนครั้งการแจ้งเตือนไลน์
+                                    notify_second = 300                  # เวลาในการแจ้งเตือนที่จะเกิดในไลน์
+                                    max_replay_notify = 4               # จำนวนการแจ้งเตือนไฟล์เสียงที่ไม่ได้รับประทานยา
                                     
-                                    if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
-                                        get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา                                    
+                                    # ไฟล์เสียง beep
+                                    audio_time = time.time()            # เก็บเวลาเริ่มต้นเพื่อใช้ในการตรวจสอบระยะการเล่นไฟล์เสียง
+                                    audio_play = 3                      # เล่นไฟล์ใน 3 วินาที
                                     
-                                    # เงื่อนไขการแจ้งเตือนซ้ำ
-                                    if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
-                                        print(time.time)
-                                        print(start_time)
-                                        self.wait_receive_line(self.channel_access_token, notify_time)
-                                        notify_time += 1
-                                                            
-                                        start_time = time.time()
+                                    # ระยะจากคนและกล่องจ่ายยา (cm)
+                                    range_user = 50                     # ระยะจากผู้ใช้กับตัวกล่องยา
                                     
-                                    # เงื่อนไขไม่มารีบยา
-                                    # if time.time() - start_time >= notify_second and notify_time == max_replay_notify:
-                                    
-                                    # print(self.meal_seconds)
-                                    # print(meal_seconds)
-                                    # print(before_breakfast_seconds)
-                                    # print(after_breakfast_seconds)
-                                    
-                                    # if current_time >= after_breakfast_seconds - (5 * 60) and current_time <= after_breakfast_seconds and current_time_tmp != after_breakfast_seconds:
-                                    
-                                    if self.meal_seconds >= before_breakfast_seconds - (5 * 60) and self.meal_seconds <= before_breakfast_seconds and meal_seconds != before_breakfast_seconds:
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อก่อนนอน")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        bbed_meal_name = "มื้อก่อนนอน"
-                                        self.not_receive_line(self.channel_access_token, bbed_meal_name)
-                                        bbed_not_receive = True                     
-                                        stay_in_loop = False
-                                        # break
-                                    elif self.meal_seconds >= after_breakfast_seconds - (5 * 60) and self.meal_seconds <= after_breakfast_seconds and meal_seconds != after_breakfast_seconds:
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อเช้า ก่อนอาหาร")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        bb_meal_name = "มื้อเช้า ก่อนอาหาร"
-                                        self.not_receive_line(self.channel_access_token, bb_meal_name)
-                                        bb_not_receive = True                            
-                                        stay_in_loop = False
-                                        # break
-                                    elif self.meal_seconds >= before_lunch_seconds - (5 * 60) and self.meal_seconds <= before_lunch_seconds and meal_seconds != before_lunch_seconds:
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อเช้า หลังอาหาร")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        ab_meal_name = "มื้อเช้า หลังอาหาร"
-                                        self.not_receive_line(self.channel_access_token, ab_meal_name)
-                                        ab_not_receive = True                                  
-                                        stay_in_loop = False
-                                        # break
-                                    elif self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds:
+                                    get_drug = False
+                                    stay_in_loop = True
+                                    while stay_in_loop:           
+                                        dist1 = self.distance()
+                                        time.sleep(0.005)
+                                        # dist2 = self.distance()
+                                        # time.sleep(0.005)
                                         
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อเที่ยง ก่อนอาหาร")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        bl_meal_name = "มื้อเที่ยง ก่อนอาหาร"
-                                        self.not_receive_line(self.channel_access_token, bl_meal_name)  
-                                        bl_not_receive = True                               
-                                        stay_in_loop = False
-                                        # break
-                                    elif self.meal_seconds >= before_dinner_seconds - (5 * 60) and self.meal_seconds <= before_dinner_seconds and meal_seconds != before_dinner_seconds:
-                                        
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อเที่ยง หลังอาหาร")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        al_meal_name = "มื้อเที่ยง หลังอาหาร"
-                                        self.not_receive_line(self.channel_access_token, al_meal_name)
-                                        al_not_receive = True                                 
-                                        stay_in_loop = False
-                                        # break
-                                    elif self.meal_seconds >= after_dinner_seconds - (5 * 60) and self.meal_seconds <= after_dinner_seconds and meal_seconds != after_dinner_seconds:
-                                        
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อเย็น ก่อนอาหาร")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        bd_meal_name = "มื้อเย็น ก่อนอาหาร"
-                                        self.not_receive_line(self.channel_access_token, bd_meal_name)
-                                        bd_not_receive = True                                 
-                                        stay_in_loop = False
-                                        # break
-                                    elif self.meal_seconds >= before_sleep_seconds - (5 * 60) and self.meal_seconds <= before_sleep_seconds and meal_seconds != before_sleep_seconds:
-                                        
-                                        time.sleep(3)
-                                        print("ผู้สูงอายุไม่มารับยา มื้อเย็น หลังอาหาร")
-                                        notify_time = 1
-                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        time.sleep(2)
-                                        self.pwm.set_pwm(15, 0, self.servo_max)
-                                        time.sleep(1)
-                                        ad_meal_name = "มื้อเย็น หลังอาหาร"
-                                        self.not_receive_line(self.channel_access_token, ad_meal_name) 
-                                        bd_not_receive = True                             
-                                        stay_in_loop = False
-                                        # break
-                                    # เงื่อนไขถ้ามารับยา
-                                    if get_drug:
-                                        print("ผู้สูงอายุมารับยาแล้ว")                                                                        
-                                        capture_image_thread = threading.Thread(target=self.capture_image)
-                                        capture_image_thread.start()
-                                        capture_image_thread.join()
-                                        
-                                        if current_time == before_breakfast:
-                                            meal_name = "มื้อเช้า ก่อนอาหาร"
-                                        elif current_time == after_breakfast:
-                                            meal_name = "มื้อเช้า หลังอาหาร"
-                                        elif current_time == before_lunch:
-                                            meal_name = "มื้อเช้า หลังอาหาร"
-                                        elif current_time == after_lunch:
-                                            meal_name = "มื้อเช้า หลังอาหาร"
-                                        elif current_time == before_dinner:
-                                            meal_name = "มื้อเช้า หลังอาหาร"
-                                        elif current_time == after_dinner:
-                                            meal_name = "มื้อเช้า หลังอาหาร"
-                                        elif current_time == before_sleep:
-                                            meal_name = "มื้อเช้า หลังอาหาร"
+                                        # print ("Measured Distance = %.1f cm" % dist1)
+                                        # print ("Measured Distance 2 = %.1f cm" % dist2)
+                                        self.motion_detect()         # เรียกฟังก์ชันตรวจจับการเคลื่อนไหว
                                         
                                         
-                                        self.send_image_to_line(self.image_url, self.channel_access_token, meal_name)               
+                                        # self.led_blink()
+                                        self.led_blink()
                                         
-                                        stay_in_loop = False
-                                        # break
-                                    
-                                    if not col == self.max_col:
-                                        self.save_state(col, row, servoNum)  # Save the current state       
-                                
-                        # เพิ่มเงื่อนไขที่ถ้า col = 3 ให้กลับไปที่ 0
-                        if col == self.max_col:
-                            col = 0
+                                        # if time.time() - start_led_time <= led_play and not get_drug:
                                             
-                        row += 1
-                        servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปแถวถัดไป
-                        
-                        if not row == self.max_row:
+                                        #     start_led_time = time.time()
+                                            
+                                        
+                                        # if not beep_process.is_alive() and time.time() - audio_time >= audio_play and not get_drug:
+                                        if time.time() - audio_time >= audio_play and not get_drug:
+                                            # beep_process = multiprocessing.Process(target=self.beep)
+                                            # print("beep ~ beep")
+                                            # beep_process.start()        #9
+                                            self.beep_audio()
+                                            
+                                            # start_led_time = time.time()
+                                            audio_time = time.time()
+                                            
+                                        
+                                        # if dist1 < range_user and dist2 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
+                                        #     get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา
+                                        
+                                        if dist1 < range_user and GPIO.input(self.GPIO_PIR):          # ตรวจสอบระยะที่ 1 และ 2 เปรียบเทียบเพื่อป้องกันความผิดพลาดของเซนเซอร์ 
+                                            get_drug = True                                                          # และใช้ Motion sensor ในการตรวจจับการเคลื่อนไหวที่มารับยา                                    
+                                        
+                                        # เงื่อนไขการแจ้งเตือนซ้ำ
+                                        if time.time() - start_time >= notify_second and notify_time != max_replay_notify:
+                                            # print(time.time)
+                                            # print(start_time)
+                                            self.wait_receive_line(self.channel_access_token, notify_time)
+                                            notify_time += 1
+                                                                
+                                            start_time = time.time()
+                                        
+                                        # เงื่อนไขไม่มารีบยา
+                                        # if time.time() - start_time >= notify_second and notify_time == max_replay_notify:
+                                        
+                                        
+                                        # if current_time >= after_breakfast_seconds - (5 * 60) and current_time <= after_breakfast_seconds and current_time_tmp != after_breakfast_seconds:
+                                        # print("=======================")
+                                        # print(self.meal_seconds >= after_lunch_seconds - (5 * 60))
+                                        # print(self.meal_seconds <= after_lunch_seconds)
+                                        # print(meal_seconds != after_lunch_seconds)
+                                        # print(after_lunch_time)
+                                        # print(self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds and after_lunch_time)
+                                        # print("=======================")
+                                        
+                                        if self.meal_seconds >= before_breakfast_seconds - (5 * 60) and self.meal_seconds <= before_breakfast_seconds and meal_seconds != before_breakfast_seconds and before_breakfast_time:
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name)
+                                            bbed_not_receive = True                     
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        elif self.meal_seconds >= after_breakfast_seconds - (5 * 60) and self.meal_seconds <= after_breakfast_seconds and meal_seconds != after_breakfast_seconds and after_breakfast_time:
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name)
+                                            bb_not_receive = True                            
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        elif self.meal_seconds >= before_lunch_seconds - (5 * 60) and self.meal_seconds <= before_lunch_seconds and meal_seconds != before_lunch_seconds and before_lunch_time:
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name)
+                                            ab_not_receive = True                                  
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        elif self.meal_seconds >= after_lunch_seconds - (5 * 60) and self.meal_seconds <= after_lunch_seconds and meal_seconds != after_lunch_seconds and after_lunch_time:
+                                            
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name)  
+                                            bl_not_receive = True                               
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        elif self.meal_seconds >= before_dinner_seconds - (5 * 60) and self.meal_seconds <= before_dinner_seconds and meal_seconds != before_dinner_seconds and before_dinner_time:
+                                            
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name)
+                                            al_not_receive = True                                 
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        elif self.meal_seconds >= after_dinner_seconds - (5 * 60) and self.meal_seconds <= after_dinner_seconds and meal_seconds != after_dinner_seconds and after_dinner_time:
+                                            
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name)
+                                            bd_not_receive = True                                 
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        elif self.meal_seconds >= before_sleep_seconds - (5 * 60) and self.meal_seconds <= before_sleep_seconds and meal_seconds != before_sleep_seconds and before_sleep_time:
+                                            
+                                            time.sleep(3)
+                                            print(f"ผู้สูงอายุไม่มารับยา {meal_name}")
+                                            notify_time = 1
+                                            # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                            # time.sleep(2)
+                                            # self.pwm.set_pwm(15, 0, self.servo_max)
+                                            # time.sleep(1)
+                                            self.not_receive_line(self.channel_access_token, meal_name) 
+                                            bd_not_receive = True                             
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        # เงื่อนไขถ้ามารับยา
+                                        if get_drug:
+                                            print("ผู้สูงอายุมารับยาแล้ว")                                                                        
+                                            capture_image_thread = threading.Thread(target=self.capture_image)
+                                            capture_image_thread.start()
+                                            capture_image_thread.join()
+                                        
+                                            self.send_image_to_line(self.image_url, self.channel_access_token, meal_name)               
+                                            
+                                            stay_in_loop = False
+                                            self.save_main_state(True)
+                                        if not col == self.max_col:
+                                            if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
+                                                self.save_state(col, row, servoNum)  # Save the current state   
+                                            
+                                            # print("----------------------")
+                                            # print(f"col:{cur_col}")
+                                            # print(f"row:{cur_row}")
+                                            # print("----------------------")
+                                            # print(f"col_list:{meal_drug_list[-1][1]}")
+                                            # print(f"row_list:{meal_drug_list[-1][0]}")
+                                            if cur_col == meal_drug_list[-1][1] and cur_row == meal_drug_list[-1][0]:
+                                                self.save_state(0,0,0)
+                                                self.save_prepare_state(False) 
+                                    
+                            # เพิ่มเงื่อนไขที่ถ้า col = 3 ให้กลับไปที่ 0
+                            if col == self.max_col - 1:
+                                col = 0
+                                                
+                            row += 1
+                            servoNum += 2               # จำนวนเซอร์โว 2 ตัว และไปแถวถัดไป
+                            
+                            if not row == self.max_row - 1:
+                                if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
+                                    self.save_state(col, row, servoNum)  # Save the current state
+                                
+                                if cur_col == meal_drug_list[-1][1] and cur_row == meal_drug_list[-1][0]:
+                                    self.save_state(0,0,0)
+                                    self.save_prepare_state(False) 
+                            
+                        row = 0
+                        servoNum = 0
+                        if cur_col != meal_drug_list[-1][1] or cur_row != meal_drug_list[-1][0]:
                             self.save_state(col, row, servoNum)  # Save the current state
                         
-                    row = 0
-                    servoNum = 0
-                    self.save_state(col, row, servoNum)  # Save the current state
+                        if cur_col == meal_drug_list[-1][1] and cur_row == meal_drug_list[-1][0]:
+                            self.save_state(0,0,0)
+                            self.save_prepare_state(False) 
         
         except KeyboardInterrupt:
             print("\nถูกหยุดการทำงานโดยผู้ใช้")
@@ -844,9 +1006,8 @@ class SensorThread(QObject):
             
         self.sensor_thread.moveToThread(self.thread)
         self.thread.started.connect(self.sensor_thread.run)
+        # self.sensor_thread.current_time_signal.connect(self.handle_current_time_signal)
         
-        # self.thread.started.connect(self.sensor_thread.receiveParams)
-            
         self.sensor_thread.finished.connect(self.thread.quit)
         # self.sensor_thread.finished.connect(self.sensor_thread.deleteLater)
         # self.thread.finished.connect(self.thread.deleteLater)    

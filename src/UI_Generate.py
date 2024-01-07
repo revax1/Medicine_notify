@@ -1,10 +1,11 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
-
+from PyQt5.QtCore import *
 from Utils import *
 width, height = Scale_Width_Height()
 
 class UI_Genarate(object):
+    
     def setupUi(self, UI, Widget):
         # Show waiting dialog
         self.waiting_dialog = WaitingDialog(widget_manager, UI)

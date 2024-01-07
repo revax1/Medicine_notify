@@ -237,9 +237,9 @@ class Ui_encrypt_check(object):
                 connection.commit()
                 QtWidgets.QMessageBox.information(encrypt_check, "Success", "ข้อมูลถูกบันทึกเรียบร้อยแล้ว")
                 # QtWidgets.QMessageBox.information.setStyleSheet("background-color: rgb(255, 255, 255);")
-                from main import Ui_Medicine_App
+                from drug_List import Ui_drug_List
                 homepage_form = UI_Genarate()
-                homepage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
+                homepage_form.widgetSet(UI_instance.Get(), Ui_drug_List)
                 connection.close()
                 
                 
