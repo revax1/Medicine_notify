@@ -1,167 +1,376 @@
+from __future__ import division
+
+from Utils import *
+from UI_Generate import *
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QLabel
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, QTimer, QLocale
+
+import sys
+import time
+import RPi.GPIO as GPIO
+
+from datetime import datetime
+import os
+import Adafruit_PCA9685
+import subprocess
+import threading
+# from playsound import playsound
+import requests
+import pygame
+
 from drug_List import Ui_drug_List
 from select_time import Ui_select_time
-from pack_med import Ui_med_pack
+# from pack_med import Ui_med_pack
+from pack import Ui_med_pack
 from sortDrug import Ui_sortDrug
 from drugTotal import Ui_drugTotal
-from moduleHW import MedicineDispenser
+from wifi import Ui_wifi
+from module import SensorThread
 
 import sqlite3
 
-import datetime
-from PyQt5.QtCore import QTimer, QLocale
+# subprocess.run(["/home/pi/Documents/Medicine_notify/src/permission.sh"])
+
+######################### initial ######################\
+os.environ["QT_IM_MODULE"] = "qtvirtualkeyboard"
+
+# Connect to SQLite database
+connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
+cursor = connection.cursor()
+
+# Create Drug table
+cursor.execute('''   
+    CREATE TABLE IF NOT EXISTS Drug (
+        "drug_id"	INTEGER,
+        "drug_name"	TEXT,
+        "drug_description"	TEXT,
+        "drug_remaining"	REAL,
+        "drug_remaining_meal"	INTEGER,
+        "fraction"	REAL,
+        "external_drug"	INTEGER,
+        "internal_drug"	INTEGER,
+        "drug_eat"	REAL,
+        "all_drug_recieve"	INTEGER,
+        "day_start"	INTEGER,
+        "drug_log"	TEXT,
+        "drug_new"  REAL,
+        "drug_size" REAL,
+        PRIMARY KEY("drug_id" AUTOINCREMENT))
+''')
+
+# Create Meal table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS Meal (
+        "meal_id"	INTEGER,
+        "meal_name"	TEXT,
+        "time"	TEXT,
+        PRIMARY KEY("meal_id" AUTOINCREMENT)
+    )
+''')
+
+# Create Drug_handle table 
+##################### ใช้ระบุว่า ยาตัวนั้นกินมื้อไหนบ้าง ######################## 
+# ทำตารางนี้มาเพื่อแทนที่ meal_state ซึ่งเป็นการเก็บ state โดยรวม
+cursor.execute('''       
+    CREATE TABLE IF NOT EXISTS Drug_handle (
+        "handle_id"	INTEGER,
+        "drug_id"	INTEGER,
+        "meal_id"	INTEGER,
+        FOREIGN KEY("meal_id") REFERENCES "Meal"("meal_id"),
+        FOREIGN KEY("drug_id") REFERENCES "Drug"("drug_id"),
+        PRIMARY KEY("handle_id" AUTOINCREMENT)
+    )
+''')
+
+connection.commit()      
+################################################################
 
 class Ui_Medicine_App(object):
     def setupUi(self, Medicine_App):
+        drug_list_instance.Set(None)
+        drug_name_instance.Set(None)
+        drug_ID_instance.Set(None)
+        each_drug_instance.Set(None)
+        each_drug_2_instance.Set(None)
+        drug_Update_instance.Set(None)
+        drug_Update_2_instance.Set(None)
+        day_start_instance.Set(None)
+        select_meal_instance.Set(None)
+        data_checkui1_instance.Set(None)
+        data_checkui2_instance.Set(None)
+        data_checkui3_instance.Set(None)
+        meal_label_instance.Set(None)
+        wifi_name_instance.Set(None)
+
+        UI_instance.Set(Medicine_App)
+        show_widget_fullscreen(Medicine_App)
+
         Medicine_App.setObjectName("Medicine_App")
-        Medicine_App.setEnabled(True)
-        Medicine_App.resize(531, 401)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/home_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        Medicine_App.setWindowIcon(icon)
-        Medicine_App.setStyleSheet("background-color: rgb(217, 244, 255)")
-        Medicine_App.setIconSize(QtCore.QSize(40, 40))
-        self.Home_Page = QtWidgets.QWidget(Medicine_App)
-        self.Home_Page.setObjectName("Home_Page")
-        self.addDrug_pushButton = QtWidgets.QPushButton(self.Home_Page)
-        self.addDrug_pushButton.setGeometry(QtCore.QRect(90, 160, 121, 41))
+        Medicine_App.resize(int(683 * width), int(400 * height))
+        Medicine_App.setStyleSheet("\n"
+"background-color: rgb(23, 73, 110);")
+        self.centralwidget = QtWidgets.QWidget(Medicine_App)
+        self.centralwidget.setObjectName("centralwidget")
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setGeometry(QtCore.QRect(int(0 * width), int(-60 * height), int(683 * width), int(131 * height)))
+        self.frame.setStyleSheet("border-radius: 40px;\n"
+"background-color: rgb(255, 255, 255);\n" )
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.frame)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.frame.setGraphicsEffect(shadow)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.home_label = QtWidgets.QLabel(self.frame)
+        self.home_label.setGeometry(QtCore.QRect(int(200 * width), int(70 * height), int(281 * width), int(51 * height)))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(int(14 * height))
         font.setBold(True)
-        font.setWeight(75)
-        self.addDrug_pushButton.setFont(font)
-        self.addDrug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border-color: rgb(0, 0, 0);")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/drug_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.addDrug_pushButton.setIcon(icon1)
-        self.addDrug_pushButton.setIconSize(QtCore.QSize(20, 40))
-        self.addDrug_pushButton.setAutoDefault(False)
-        self.addDrug_pushButton.setDefault(False)
-        self.addDrug_pushButton.setFlat(False)
-        self.addDrug_pushButton.setObjectName("addDrug_pushButton")
-        self.home_label = QtWidgets.QLabel(self.Home_Page)
-        self.home_label.setGeometry(QtCore.QRect(200, 40, 141, 41))
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setWeight(int(75 * width))
         self.home_label.setFont(font)
-        self.home_label.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.home_label.setStyleSheet("border-radius: 16px;\n"
+"color: rgb(255, 255, 255);\n"
+"background-color: rgb(23, 73, 110);")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.home_label)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.home_label.setGraphicsEffect(shadow)
         self.home_label.setFrameShape(QtWidgets.QFrame.Box)
-        self.home_label.setLineWidth(1)
+        self.home_label.setLineWidth(int(1 * width))
         self.home_label.setTextFormat(QtCore.Qt.AutoText)
         self.home_label.setScaledContents(False)
         self.home_label.setAlignment(QtCore.Qt.AlignCenter)
         self.home_label.setWordWrap(True)
         self.home_label.setObjectName("home_label")
-        self.line = QtWidgets.QFrame(self.Home_Page)
-        self.line.setGeometry(QtCore.QRect(-10, 110, 551, 20))
-        self.line.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.line.setLineWidth(3)
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setObjectName("line")
-        self.setting_pushButton = QtWidgets.QPushButton(self.Home_Page)
-        self.setting_pushButton.setGeometry(QtCore.QRect(260, 160, 161, 41))
+        self.img_home_label = QtWidgets.QLabel(self.frame)
+        self.img_home_label.setGeometry(QtCore.QRect(int(277 * width), int(80 * height), int(33 * width), int(31 * height)))
+        self.img_home_label.setText("")
+        self.img_home_label.setPixmap(QtGui.QPixmap(":/icons/home2_icon.png"))
+        self.img_home_label.setScaledContents(True)
+        self.img_home_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_home_label.setObjectName("img_home_label")
+        
+        self.wifi_pushButton = QtWidgets.QPushButton(self.frame)
+        self.wifi_pushButton.setGeometry(QtCore.QRect(int(590 * width), int(76 * height), int(41 * width), int(41 * height)))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(int(10 * height))
         font.setBold(True)
-        font.setWeight(75)
-        self.setting_pushButton.setFont(font)
-        self.setting_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border-color: rgb(0, 0, 0);")
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/icons/setting_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.setting_pushButton.setIcon(icon2)
-        self.setting_pushButton.setIconSize(QtCore.QSize(20, 40))
-        self.setting_pushButton.setAutoDefault(False)
-        self.setting_pushButton.setDefault(False)
-        self.setting_pushButton.setFlat(False)
-        self.setting_pushButton.setObjectName("setting_pushButton")
-        self.putDrug_pushButton = QtWidgets.QPushButton(self.Home_Page)
-        self.putDrug_pushButton.setGeometry(QtCore.QRect(130, 220, 261, 41))
+        font.setWeight(int(75 * width))
+        self.wifi_pushButton.setFont(font)
+        self.wifi_pushButton.setStyleSheet("border-radius: 9px;\n"
+                                 "color: rgb(0, 0, 0);\n"
+                                 "background-color: rgb(255, 255, 255);")
+        
+        self.img_wifi_label = QtWidgets.QLabel(self.wifi_pushButton)
+        self.img_wifi_label.setGeometry(QtCore.QRect(int(5 * width), int(8 * height), int(31 * width), int(23 * height)))
+        self.img_wifi_label.setText("")
+        self.img_wifi_label.setPixmap(QtGui.QPixmap(":/icons/wifi_icon.png"))
+        self.img_wifi_label.setScaledContents(True)
+        self.img_wifi_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_wifi_label.setObjectName("img_wifi_label")
+
+        self.label_3 = QtWidgets.QLabel(self.frame)
+        self.label_3.setGeometry(QtCore.QRect(int(50 * width), int(97 * height), int(100 * width), int(16 * height)))
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.putDrug_pushButton.setFont(font)
-        self.putDrug_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border-color: rgb(0, 0, 0);")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/icons/istockphoto-1263011147-170667a.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.putDrug_pushButton.setIcon(icon3)
-        self.putDrug_pushButton.setIconSize(QtCore.QSize(20, 50))
-        self.putDrug_pushButton.setAutoDefault(False)
-        self.putDrug_pushButton.setDefault(False)
-        self.putDrug_pushButton.setFlat(False)
-        self.putDrug_pushButton.setObjectName("putDrug_pushButton")
-        self.alignment_pushButton = QtWidgets.QPushButton(self.Home_Page)
-        self.alignment_pushButton.setGeometry(QtCore.QRect(150, 280, 211, 41))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.alignment_pushButton.setFont(font)
-        self.alignment_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border-color: rgb(0, 0, 0);")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/icons/Industry-Rack-icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.alignment_pushButton.setIcon(icon4)
-        self.alignment_pushButton.setIconSize(QtCore.QSize(20, 50))
-        self.alignment_pushButton.setAutoDefault(False)
-        self.alignment_pushButton.setDefault(False)
-        self.alignment_pushButton.setFlat(False)
-        self.alignment_pushButton.setObjectName("alignment_pushButton")
-        self.drugLeft_pushButton = QtWidgets.QPushButton(self.Home_Page)
-        self.drugLeft_pushButton.setGeometry(QtCore.QRect(140, 340, 231, 41))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.drugLeft_pushButton.setFont(font)
-        self.drugLeft_pushButton.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border-color: rgb(0, 0, 0);")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/icons/table_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.drugLeft_pushButton.setIcon(icon5)
-        self.drugLeft_pushButton.setIconSize(QtCore.QSize(20, 50))
-        self.drugLeft_pushButton.setAutoDefault(False)
-        self.drugLeft_pushButton.setDefault(False)
-        self.drugLeft_pushButton.setFlat(False)
-        self.drugLeft_pushButton.setObjectName("drugLeft_pushButton")
-        self.label_2 = QtWidgets.QLabel(self.Home_Page)
-        self.label_2.setGeometry(QtCore.QRect(210, 50, 21, 21))
-        font = QtGui.QFont()
-        font.setPointSize(24)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_2.setFont(font)
-        self.label_2.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.label_2.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.label_2.setLineWidth(1)
-        self.label_2.setText("")
-        self.label_2.setTextFormat(QtCore.Qt.AutoText)
-        self.label_2.setPixmap(QtGui.QPixmap(":/icons/home_icon.png"))
-        self.label_2.setScaledContents(True)
-        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_2.setWordWrap(True)
-        self.label_2.setObjectName("label_2")
-        self.label = QtWidgets.QLabel(self.Home_Page)
-        self.label.setGeometry(QtCore.QRect(390, 40, 71, 31))
-        font = QtGui.QFont()
-        font.setPointSize(8)
-        self.label.setFont(font)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
-        self.label_3 = QtWidgets.QLabel(self.Home_Page)
-        self.label_3.setGeometry(QtCore.QRect(50, 30, 121, 51))
-        font = QtGui.QFont()
-        font.setPointSize(8)
+        font.setPointSize(int(8 * height))
         self.label_3.setFont(font)
         self.label_3.setStyleSheet("")
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
-        Medicine_App.setCentralWidget(self.Home_Page)
+        self.label = QtWidgets.QLabel(self.frame)
+        self.label.setGeometry(QtCore.QRect(int(43 * width), int(77 * height), int(71 * width), int(16 * height)))
+        font = QtGui.QFont()
+        font.setPointSize(int(8 * height))
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.frame_2 = QtWidgets.QFrame(self.centralwidget)
+        self.frame_2.setGeometry(QtCore.QRect(int(205 * width), int(90 * height), int(271 * width), int(281 * height)))
+        self.frame_2.setStyleSheet("border-radius: 16px;\n"
+"background-color: rgb(236, 236, 236);\n")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.frame_2)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.frame_2.setGraphicsEffect(shadow)
+        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_2.setObjectName("frame_2")
+        self.addDrug_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.addDrug_pushButton.setGeometry(QtCore.QRect(int(225 * width), int(110 * height), int(231 * width), int(41 * height)))
+        font = QtGui.QFont()
+        font.setPointSize(int(10 * height))
+        font.setBold(True)
+        font.setWeight(int(75 * width))
+        self.addDrug_pushButton.setFont(font)
+        self.addDrug_pushButton.setStyleSheet("border-radius: 9px;\n"
+                                 "color: rgb(0, 0, 0);\n"
+                                 "background-color: rgb(255, 255, 255);")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.addDrug_pushButton)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.addDrug_pushButton.setGraphicsEffect(shadow)
+
+        # icon = QtGui.QIcon()                                                                      ไม่ได้ลบไอคอนแบบเก่าแค่คอมเม้นไว้
+        # icon.addPixmap(QtGui.QPixmap(":/icons/drug_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.img_druglist_label = QtWidgets.QLabel(self.centralwidget)
+        self.img_druglist_label.setGeometry(QtCore.QRect(int(292 * width), int(119 * height), int(25 * width), int(24 * height)))
+        self.img_druglist_label.setText("")
+        self.img_druglist_label.setPixmap(QtGui.QPixmap(":/icons/druglist_tab.png"))
+        self.img_druglist_label.setScaledContents(True)
+        self.img_druglist_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_druglist_label.setObjectName("img_druglist_label")
+
+        # self.addDrug_pushButton.setIcon(icon)
+        # self.addDrug_pushButton.setIconSize(QtCore.QSize(20, 40))
+        # self.addDrug_pushButton.setAutoDefault(False)
+        # self.addDrug_pushButton.setDefault(False)
+        # self.addDrug_pushButton.setFlat(False)
+        self.addDrug_pushButton.setObjectName("addDrug_pushButton")
+        self.setting_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.setting_pushButton.setGeometry(QtCore.QRect(int(225 * width), int(160 * height), int(231 * width), int(41 * height)))
+        font = QtGui.QFont()
+        font.setPointSize(int(10 * height))
+        font.setBold(True)
+        font.setWeight(int(75 * width))
+        self.setting_pushButton.setFont(font)
+        self.setting_pushButton.setStyleSheet("border-radius: 9px;\n"
+                                 "color: rgb(0, 0, 0);\n"
+                                 "background-color: rgb(255, 255, 255);")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.setting_pushButton)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.setting_pushButton.setGraphicsEffect(shadow)
+        # icon1 = QtGui.QIcon()
+        # icon1.addPixmap(QtGui.QPixmap(":/icons/setting_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.img_selecttime_label = QtWidgets.QLabel(self.centralwidget)
+        self.img_selecttime_label.setGeometry(QtCore.QRect(int(275 * width), int(169 * height), int(26 * width), int(24 * height)))
+        self.img_selecttime_label.setText("")
+        self.img_selecttime_label.setPixmap(QtGui.QPixmap(":/icons/selecttime_tab.png"))
+        self.img_selecttime_label.setScaledContents(True)
+        self.img_selecttime_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_selecttime_label.setObjectName("img_selecttime_label")
+
+        # self.setting_pushButton.setIcon(icon1)
+        # self.setting_pushButton.setIconSize(QtCore.QSize(20, 40))
+        # self.setting_pushButton.setAutoDefault(False)
+        # self.setting_pushButton.setDefault(False)
+        # self.setting_pushButton.setFlat(False)
+        self.setting_pushButton.setObjectName("setting_pushButton")
+        self.putDrug_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.putDrug_pushButton.setGeometry(QtCore.QRect(int(225 * width), int(210 * height), int(231 * width), int(41 * height)))
+        font = QtGui.QFont()
+        font.setPointSize(int(10 * height))
+        font.setBold(True)
+        font.setWeight(int(75 * width))
+        self.putDrug_pushButton.setFont(font)
+        self.putDrug_pushButton.setStyleSheet("border-radius: 9px;\n"
+                                 "color: rgb(0, 0, 0);\n"
+                                 "background-color: rgb(255, 255, 255);")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.putDrug_pushButton)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.putDrug_pushButton.setGraphicsEffect(shadow)
+        # icon2 = QtGui.QIcon()
+        # icon2.addPixmap(QtGui.QPixmap(":/icons/istockphoto-1263011147-170667a.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.img_pack_label = QtWidgets.QLabel(self.centralwidget)
+        self.img_pack_label.setGeometry(QtCore.QRect(int(260 * width), int(219 * height), int(25 * width), int(24 * height)))
+        self.img_pack_label.setText("")
+        self.img_pack_label.setPixmap(QtGui.QPixmap(":/icons/pack_tab.png"))
+        self.img_pack_label.setScaledContents(True)
+        self.img_pack_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_pack_label.setObjectName("img_pack_label")
+
+        # self.putDrug_pushButton.setIcon(icon2)
+        # self.putDrug_pushButton.setIconSize(QtCore.QSize(20, 50))
+        # self.putDrug_pushButton.setAutoDefault(False)
+        # self.putDrug_pushButton.setDefault(False)
+        # self.putDrug_pushButton.setFlat(False)
+        self.putDrug_pushButton.setObjectName("putDrug_pushButton")
+        self.alignment_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.alignment_pushButton.setGeometry(QtCore.QRect(int(225 * width), int(260 * height), int(231 * width), int(41 * height)))
+        font = QtGui.QFont()
+        font.setPointSize(int(10 * height))
+        font.setBold(True)
+        font.setWeight(int(75 * width))
+        self.alignment_pushButton.setFont(font)
+        self.alignment_pushButton.setStyleSheet("border-radius: 9px;\n"
+                                 "color: rgb(0, 0, 0);\n"
+                                 "background-color: rgb(255, 255, 255);")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.alignment_pushButton)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.alignment_pushButton.setGraphicsEffect(shadow)
+        # icon3 = QtGui.QIcon()
+        # icon3.addPixmap(QtGui.QPixmap(":/icons/Industry-Rack-icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.img_sort_label = QtWidgets.QLabel(self.centralwidget)
+        self.img_sort_label.setGeometry(QtCore.QRect(int(252 * width), int(269 * height), int(27 * width), int(24 * height)))
+        self.img_sort_label.setText("")
+        self.img_sort_label.setPixmap(QtGui.QPixmap(":/icons/sort_tab.png"))
+        self.img_sort_label.setScaledContents(True)
+        self.img_sort_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_sort_label.setObjectName("img_sort_label")
+
+        # self.alignment_pushButton.setIcon(icon3)
+        # self.alignment_pushButton.setIconSize(QtCore.QSize(20, 50))
+        # self.alignment_pushButton.setAutoDefault(False)
+        # self.alignment_pushButton.setDefault(False)
+        # self.alignment_pushButton.setFlat(False)
+        self.alignment_pushButton.setObjectName("alignment_pushButton")
+        self.drugLeft_pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.drugLeft_pushButton.setGeometry(QtCore.QRect(int(225 * width), int(310 * height), int(231 * width), int(41 * height)))
+        font = QtGui.QFont()
+        font.setPointSize(int(10 * height))
+        font.setBold(True)
+        font.setWeight(int(75 * width))
+        self.drugLeft_pushButton.setFont(font)
+        self.drugLeft_pushButton.setStyleSheet("border-radius: 9px;\n"
+                                 "color: rgb(0, 0, 0);\n"
+                                 "background-color: rgb(255, 255, 255);")
+        # Add drop shadow effect to the button
+        shadow = QGraphicsDropShadowEffect(self.drugLeft_pushButton)
+        shadow.setBlurRadius(int(8 * width))
+        shadow.setColor(QtGui.QColor(0, 0, 0, 100))
+        shadow.setOffset(int(0 * width), int(2 * height))
+        self.drugLeft_pushButton.setGraphicsEffect(shadow)
+        # icon4 = QtGui.QIcon()
+        # icon4.addPixmap(QtGui.QPixmap(":/icons/table_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.img_drugleft_label = QtWidgets.QLabel(self.centralwidget)
+        self.img_drugleft_label.setGeometry(QtCore.QRect(int(255 * width), int(318 * height), int(27 * width), int(24 * height)))
+        self.img_drugleft_label.setText("")
+        self.img_drugleft_label.setPixmap(QtGui.QPixmap(":/icons/drugleft_tab.png"))
+        self.img_drugleft_label.setScaledContents(True)
+        self.img_drugleft_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.img_drugleft_label.setObjectName("img_drugleft_label")
+
+        # self.drugLeft_pushButton.setIcon(icon4)
+        # self.drugLeft_pushButton.setIconSize(QtCore.QSize(20, 50))
+        # self.drugLeft_pushButton.setAutoDefault(False)
+        # self.drugLeft_pushButton.setDefault(False)
+        # self.drugLeft_pushButton.setFlat(False)
+        self.drugLeft_pushButton.setObjectName("drugLeft_pushButton")
+        Medicine_App.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(Medicine_App)
         QtCore.QMetaObject.connectSlotsByName(Medicine_App)
@@ -172,51 +381,8 @@ class Ui_Medicine_App(object):
         self.timer.start(1000)
         
         # Connect to SQLite database
-        self.connection = sqlite3.connect("medicine.db")
+        self.connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
         self.cursor = self.connection.cursor()
-
-        # Create Drug table
-        self.cursor.execute('''   
-            CREATE TABLE IF NOT EXISTS Drug (
-                "drug_id"	INTEGER,
-                "drug_name"	TEXT,
-                "drug_description"	TEXT,
-                "drug_remaining"	REAL,
-                "drug_remaining_meal"	INTEGER,
-                "fraction"	REAL,
-                "external_drug"	INTEGER,
-                "internal_drug"	INTEGER,
-                "drug_eat"	REAL,
-                "all_drug_recieve"	INTEGER,
-                "day_start"	INTEGER,
-                "drug_log"	TEXT,
-                "drug_new"  REAL,
-                PRIMARY KEY("drug_id" AUTOINCREMENT))
-        ''')
-        
-        # Create Meal table
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Meal (
-                "meal_id"	INTEGER,
-                "meal_name"	TEXT,
-                "time"	TEXT,
-                PRIMARY KEY("meal_id" AUTOINCREMENT)
-            )
-        ''')
-
-        # Create Drug_handle table 
-        ##################### ใช้ระบุว่า ยาตัวนั้นกินมื้อไหนบ้าง ######################## 
-        # ทำตารางนี้มาเพื่อแทนที่ meal_state ซึ่งเป็นการเก็บ state โดยรวม
-        self.cursor.execute('''       
-            CREATE TABLE IF NOT EXISTS Drug_handle (
-                "handle_id"	INTEGER,
-                "drug_id"	INTEGER,
-                "meal_id"	INTEGER,
-                FOREIGN KEY("meal_id") REFERENCES "Meal"("meal_id"),
-                FOREIGN KEY("drug_id") REFERENCES "Drug"("drug_id"),
-                PRIMARY KEY("handle_id" AUTOINCREMENT)
-            )
-        ''')
         
         # Check if the Meal table is empty, and if so, insert default values
         self.cursor.execute("SELECT COUNT(*) FROM Meal")
@@ -246,11 +412,45 @@ class Ui_Medicine_App(object):
         self.putDrug_pushButton.clicked.connect(self.open_pack_page)
         self.alignment_pushButton.clicked.connect(self.open_sortdrug_page)
         self.drugLeft_pushButton.clicked.connect(self.open_drugTotal_page)
+        self.wifi_pushButton.clicked.connect(self.open_wifi_page)
 
+        # Set up button press and release styling
+        self.addDrug_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.addDrug_pushButton))
+        self.addDrug_pushButton.released.connect(lambda: self.set_button_released_style(self.addDrug_pushButton))
+
+        self.setting_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.setting_pushButton))
+        self.setting_pushButton.released.connect(lambda: self.set_button_released_style(self.setting_pushButton))
+
+        self.putDrug_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.putDrug_pushButton))
+        self.putDrug_pushButton.released.connect(lambda: self.set_button_released_style(self.putDrug_pushButton))
+
+        self.alignment_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.alignment_pushButton))
+        self.alignment_pushButton.released.connect(lambda: self.set_button_released_style(self.alignment_pushButton))
+
+        self.drugLeft_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.drugLeft_pushButton))
+        self.drugLeft_pushButton.released.connect(lambda: self.set_button_released_style(self.drugLeft_pushButton))
+
+        self.wifi_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.wifi_pushButton))
+        self.wifi_pushButton.released.connect(lambda: self.set_button_released_style(self.wifi_pushButton))
+        
+        
+    def set_button_pressed_style(self, button):
+        button.setStyleSheet(
+            "border-radius: 9px;\n"
+            "color: rgb(0, 0, 0);\n"
+            "background-color: rgb(200, 200, 200);"  # Change color when pressed
+        )
+
+    def set_button_released_style(self, button):
+        button.setStyleSheet(
+            "border-radius: 9px;\n"
+            "color: rgb(0, 0, 0);\n"
+            "background-color: rgb(255, 255, 255);"
+        )
         
     ###################### เวลา #############################
     def update_time(self):
-        current_datetime = datetime.datetime.now()
+        current_datetime = datetime.now()
         current_time = current_datetime.strftime("%H:%M:%S")
         current_date = current_datetime.strftime("%a, %d %b %Y")
         
@@ -259,73 +459,67 @@ class Ui_Medicine_App(object):
 
     ###################### หน้าคลังยา #############################  
     def open_drug_List_page(self):
-        self.drug_List_window = QtWidgets.QMainWindow()
-        self.ui_drug_List = Ui_drug_List()
-        self.ui_drug_List.setupUi(self.drug_List_window)
-        self.drug_List_window.show()
-
-        def close_drug_List_window():
-            self.drug_List_window.close()
-        
-        self.ui_drug_List.add_back_pushButton.clicked.connect(close_drug_List_window)
+        drug_List_form = UI_Genarate()
+        drug_List_form.widgetSet(UI_instance.Get(), Ui_drug_List)
+        self.timer.stop()
 
     ###################### หน้าตั้งเวลามื้อยา ############################# 
     def open_select_time_page(self):
-        self.select_time_window = QtWidgets.QMainWindow()
-        self.ui_select_time = Ui_select_time()
-        self.ui_select_time.setupUi(self.select_time_window)
-        self.select_time_window.show()
+        select_time_form = UI_Genarate()
+        select_time_form.widgetSet(UI_instance.Get(), Ui_select_time)
+        self.timer.stop()
         
-        def close_select_time_window():
-            self.select_time_window.close()
+    # ###################### หน้าวิธีบรรจุยา #############################                                            อันเก่า
+    # def open_pack_page(self):
+    #     self.pack_window = QtWidgets.QMainWindow()
+    #     self.ui_pack = Ui_med_pack()
+    #     self.ui_pack.setupUi(self.pack_window)
+    #     self.pack_window.show()
         
-        self.ui_select_time.back_pushButton.clicked.connect(close_select_time_window)
-        
-    ###################### หน้าวิธีบรรจุยา ############################# 
-    def open_pack_page(self):
-        self.pack_window = QtWidgets.QMainWindow()
-        self.ui_pack = Ui_med_pack()
-        self.ui_pack.setupUi(self.pack_window)
-        self.pack_window.show()
-        
-        def close_pack_window():
-            self.pack_window.close()
+    #     def close_pack_window():
+    #         self.pack_window.close()
             
-        self.ui_pack.pack_back_pushButton.clicked.connect(close_pack_window)
+    #     self.ui_pack.pack_back_pushButton.clicked.connect(close_pack_window)
+        
+        ##################### หน้าคำแนะนำการใส่ยา ############################# 
+    def open_pack_page(self):
+        pack_form = UI_Genarate()
+        pack_form.widgetSet(UI_instance.Get(), Ui_med_pack)
+        self.timer.stop()
 
     ###################### หน้าวิธีจัดเรียงยาตามผัง ############################# 
     def open_sortdrug_page(self):
-        self.sortdrug_window = QtWidgets.QMainWindow()
-        self.ui_sortdrug = Ui_sortDrug()
-        self.ui_sortdrug.setupUi(self.sortdrug_window)
-        self.sortdrug_window.show()
-        
-        def close_sortdrug_window():
-            self.sortdrug_window.close()
-            
-        self.ui_sortdrug.add_back_pushButton.clicked.connect(close_sortdrug_window)
+        sortdrug_form = UI_Genarate()
+        sortdrug_form.widgetSet(UI_instance.Get(), Ui_sortDrug)
+        self.timer.stop()
     
     ##################### หน้าจำนวนมื้อยาคงเหลือ ############################# 
     def open_drugTotal_page(self):
-        self.drugTotal_window = QtWidgets.QMainWindow()
-        self.ui_drugTotal = Ui_drugTotal()
-        self.ui_drugTotal.setupUi(self.drugTotal_window)
-        self.drugTotal_window.show()
-        
-        def close_drugTotal_window():
-            self.drugTotal_window.close()
-            
-        self.ui_drugTotal.add_back_pushButton.clicked.connect(close_drugTotal_window)
+        drugTotal_form = UI_Genarate()
+        drugTotal_form.widgetSet(UI_instance.Get(), Ui_drugTotal)
+        self.timer.stop()
+
+
+    ##################### หน้าwifi ############################# 
+    def open_wifi_page(self):
+        wifi_form = UI_Genarate()
+        wifi_form.widgetSet(UI_instance.Get(), Ui_wifi)
+        self.timer.stop()
+
 
     def retranslateUi(self, Medicine_App):
         _translate = QtCore.QCoreApplication.translate
         Medicine_App.setWindowTitle(_translate("Medicine_App", "หน้าหลัก"))
         self.addDrug_pushButton.setText(_translate("Medicine_App", "  คลังยา"))
-        self.home_label.setText(_translate("Medicine_App", "   หน้าหลัก"))
+        self.home_label.setText(_translate("Medicine_App", "     หน้าหลัก"))
         self.setting_pushButton.setText(_translate("Medicine_App", "  ตั้งเวลามื้อยา"))
-        self.putDrug_pushButton.setText(_translate("Medicine_App", "  คำแนะนำการใส่ยาในกล่องบรรจุยา"))
+        self.putDrug_pushButton.setText(_translate("Medicine_App", "  คำแนะนำการใส่ยา"))
         self.alignment_pushButton.setText(_translate("Medicine_App", "  วิธีเรียงกล่องบรรจุยา"))
-        self.drugLeft_pushButton.setText(_translate("Medicine_App", "  จำนวนมื้อยาคงเหลือ"))
+        self.drugLeft_pushButton.setText(_translate("Medicine_App", "  จำนวนยาคงเหลือ"))
+        self.wifi_pushButton.setText(_translate("Medicine_App", ""))
+
+    
+        self.img_wifi_label.raise_()
         
 import resources_rc
 
@@ -339,4 +533,7 @@ if __name__ == "__main__":
     english_locale = QLocale(QLocale.English)
     QLocale.setDefault(english_locale)
     Medicine_App.show()
+    sensor_thread = SensorThread()
+    sensor_thread.run_thread()
+
     sys.exit(app.exec_())

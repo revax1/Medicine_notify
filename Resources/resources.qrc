@@ -1,5 +1,33 @@
 <RCC>
   <qresource prefix="icons">
+    <file>notify.png</file>
+    <file>wifi_tab.png</file>
+    <file>wifi_white.png</file>
+    <file>wifi_icon.png</file>
+    <file>drugleft_tab.png</file>
+    <file>druglist_tab.png</file>
+    <file>selecttime_tab.png</file>
+    <file>pack_tab.png</file>
+    <file>sort_tab.png</file>
+    <file>encrypt.png</file>
+    <file>adddrug.png</file>
+    <file>b_label.png</file>
+    <file>b_tab.png</file>
+    <file>ball.png</file>
+    <file>bed_label.png</file>
+    <file>bed_tab.png</file>
+    <file>check.png</file>
+    <file>d_label.png</file>
+    <file>d_tab.png</file>
+    <file>l_label.png</file>
+    <file>l_tab.png</file>
+    <file>drugleft_icon.png</file>
+    <file>druglist_icon.png</file>
+    <file>each_icon.png</file>
+    <file>home2_icon.png</file>
+    <file>selecttime_icon.png</file>
+    <file>sort_icon.png</file>
+    <file>ball.png</file>
     <file>next_icon.png</file>
     <file>Flat_tick_icon.svg.png</file>
     <file>home_icon.png</file>
@@ -8,9 +36,23 @@
     <file>istockphoto-1263011147-170667a.jpg</file>
     <file>Industry-Rack-icon.png</file>
     <file>drug_icon.png</file>
+    <file>reload.png</file>
   </qresource>
   <qresource prefix="image">
+    <file>sort_in.png</file>
+    <file>sort_out.png</file>
+    <file>step.png</file>
+    <file>newpack3_img.png</file>
+    <file>newpack2_img.png</file>
+    <file>pack1_img.png</file>
+    <file>pack2_img.png</file>
+    <file>pack3_img.png</file>
     <file>med_pack2_img.png</file>
     <file>med_pack1_img.png</file>
+    <file>load.png</file>
+  </qresource>
+  <qresource prefix="animation">
+    <file>load.gif</file>
+    <file>load_white.gif</file>
   </qresource>
 </RCC>
