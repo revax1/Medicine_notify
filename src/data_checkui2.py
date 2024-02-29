@@ -125,7 +125,7 @@ class Ui_data_check2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_7.setFont(font)
         self.label_7.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -148,7 +148,7 @@ class Ui_data_check2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_8.setFont(font)
         self.label_8.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -196,7 +196,7 @@ class Ui_data_check2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.size_label.setFont(font)
         self.size_label.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -219,7 +219,7 @@ class Ui_data_check2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_6.setFont(font)
         self.label_6.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -260,7 +260,6 @@ class Ui_data_check2(object):
             
         self.add_back_pushButton.clicked.connect(self.backpage)
         self.next_pushButton.clicked.connect(lambda: self.open_data_check3())
-        # self.next_pushButton.clicked.connect(self.closeAll)
 
          # Set up button press and release styling
         self.add_back_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.add_back_pushButton))
@@ -285,6 +284,11 @@ class Ui_data_check2(object):
         )
 
     def backpage(self):
+        # ทำการคำนวณค่า all_drug_recieve ใหม่
+        drug_remaining = float(self.updated_data2['drug_remaining'])
+        drug_new = int(self.updated_data2['drug_new'])
+        self.updated_data2['drug_remaining'] = str(drug_remaining - drug_new)
+        
         from data_checkui1 import Ui_data_check1
         backpage_form = UI_Genarate()
         backpage_form.widgetSet(UI_instance.Get(), Ui_data_check1)
@@ -325,15 +329,14 @@ class Ui_data_check2(object):
         # Set the data in the labels and listWidget
         self.size_label.setText(f"{self.updated_data2['drug_size']}")
         self.label_6.setText(f"{self.updated_data2['drug_new']}")
+        
+        # ทำการคำนวณค่า all_drug_recieve ใหม่
+        drug_remaining = float(self.updated_data2['drug_remaining'])
+        drug_eat = float(self.updated_data2['drug_eat'])
+        self.updated_data2['drug_remaining_meal'] = str(drug_remaining / drug_eat)
+        
         self.label_7.setText(f"{self.updated_data2['drug_remaining_meal']}")
         self.label_8.setText(f"{self.updated_data2['all_drug_recieve']}")
-
-    def closeAll(self):
-        self.each_drug.closeAll()
-        self.each_drug2.closeAll()
-        self.select_meal.closeAll()
-        self.data_check1.closeAll()
-        self.data_check2.close()
 
     def retranslateUi(self, data_check2):
         _translate = QtCore.QCoreApplication.translate

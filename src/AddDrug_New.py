@@ -3,8 +3,7 @@ from UI_Generate import *
 width, height = Scale_Width_Height()
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtSql
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect
-
+from PyQt5.QtWidgets import *
 import sqlite3
 
 class NumericOnlyTextEdit(QtWidgets.QTextEdit):
@@ -87,7 +86,7 @@ class Ui_Add_drug(object):
         self.add_back_pushButton.setGraphicsEffect(shadow)
         self.add_back_pushButton.setObjectName("add_back_pushButton")
         self.frame_2 = QtWidgets.QFrame(self.centralwidget)
-        self.frame_2.setGeometry(QtCore.QRect(int(100 * width), int(100 * height), int(231 * width), int(230 * height)))
+        self.frame_2.setGeometry(QtCore.QRect(int(100 * width), int(100 * height), int(231 * width), int(220 * height)))
         self.frame_2.setStyleSheet("border-radius: 16px;\n"
 "background-color: rgb(236, 236, 236);")
         # Add drop shadow effect to the button
@@ -165,7 +164,7 @@ class Ui_Add_drug(object):
         self.drugAll_label.setFont(font)
         self.drugAll_label.setAlignment(QtCore.Qt.AlignCenter)
         self.drugAll_label.setObjectName("drugAll_label")
-        self.textEdit_3 = QtWidgets.QTextEdit(self.frame_3)
+        self.textEdit_3 = NumericOnlyTextEdit(self.frame_3)
         self.textEdit_3.setGeometry(QtCore.QRect(int(12 * width), int(50 * height), int(211 * width), int(41 * height)))
         font = QtGui.QFont()
         font.setPointSize(int(10 * height))
@@ -189,7 +188,7 @@ class Ui_Add_drug(object):
         self.drugOne_label.setFont(font)
         self.drugOne_label.setAlignment(QtCore.Qt.AlignCenter)
         self.drugOne_label.setObjectName("drugOne_label")
-        self.textEdit_4 = QtWidgets.QTextEdit(self.frame_3)
+        self.textEdit_4 = NumericOnlyTextEdit(self.frame_3)
         self.textEdit_4.setGeometry(QtCore.QRect(int(12 * width), int(140 * height), int(211 * width), int(41 * height)))
         font = QtGui.QFont()
         font.setPointSize(int(10 * height))
@@ -228,7 +227,7 @@ class Ui_Add_drug(object):
         Add_drug.setTabOrder(self.textEdit, self.textEdit_2)
         Add_drug.setTabOrder(self.textEdit_2, self.saveDrug_pushButton)
 
-        self.add_back_pushButton.clicked.connect(self.homepage)
+        self.add_back_pushButton.clicked.connect(self.backpage)
 
          # Set up button press and release styling
         self.add_back_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.add_back_pushButton))
@@ -269,8 +268,7 @@ class Ui_Add_drug(object):
             "background-color: rgb(85, 170, 127);"
         )
 
-    #### ห้ามตั้งชื่อยาซ้ำ ###
-    ### แก้ if not drug_name.strip() and not drug_amount.strip() and not drug_eat.strip(): ### (บรรทัด 281)
+
     def save_drug(self):
         width, height = Scale_Width_Height()
         drug_name = self.textEdit.toPlainText()
@@ -278,7 +276,10 @@ class Ui_Add_drug(object):
         drug_amount = self.textEdit_3.toPlainText()
         drug_eat = self.textEdit_4.toPlainText()
         
-        if not drug_name.strip() and not drug_amount.strip() and not drug_eat.strip():
+        if not drug_name.strip() or not drug_amount.strip() or not drug_eat.strip():
+            self.saveDrug_pushButton.setEnabled(False)
+            self.add_back_pushButton.setEnabled(False)
+            
             error_dialog = QtWidgets.QDialog(self.centralwidget)
             error_dialog.setWindowTitle("ผิดพลาด")
             error_dialog.setModal(True)
@@ -315,16 +316,54 @@ class Ui_Add_drug(object):
 
             # Show the QDialog
             error_dialog.exec_()
+            
+            self.saveDrug_pushButton.setEnabled(True)  # <-- เพิ่มบรรทัดนี้
             return  # Do not proceed with saving
-
+        
         connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
         cursor = connection.cursor()
+        # เช็คว่า drug_name ที่ต้องการเพิ่มมีอยู่แล้วหรือไม่
+        cursor.execute("SELECT COUNT(*) FROM Drug WHERE drug_name = ?", (drug_name,))
+        count = cursor.fetchone()[0]
+        if count > 0:
+            # ถ้ามี drug_name นี้อยู่แล้วในฐานข้อมูล
+            # แสดงข้อความว่า drug_name ซ้ำกัน
+            error_dialog = QtWidgets.QDialog(self.centralwidget)
+            error_dialog.setWindowTitle("ผิดพลาด")
+            error_dialog.setModal(True)
+            error_dialog.move(200, 200)
+            error_dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+
+            error_label = QtWidgets.QLabel("ชื่อยาซ้ำกัน กรุณาเปลี่ยนชื่อยา", error_dialog)
+            font = QtGui.QFont()
+            font.setPointSize(int(12 * height))
+            error_label.setFont(font)
+            error_label.setAlignment(QtCore.Qt.AlignCenter)
+
+            ok_button = QtWidgets.QPushButton("ตกลง", error_dialog)
+            ok_button_font = QtGui.QFont()
+            ok_button_font.setPointSize(int(12 * height))
+            ok_button.setFont(ok_button_font)
+
+            error_dialog.setStyleSheet("background-color: rgb(255, 241, 129); border-radius: 30px;")
+            ok_button.setStyleSheet("background-color: rgb(85, 170, 127); color: white; border: none; border-radius: 15px;")
+
+            layout = QtWidgets.QVBoxLayout()
+            layout.addWidget(error_label)
+            layout.addWidget(ok_button)
+            error_dialog.setLayout(layout)
+
+            ok_button.clicked.connect(error_dialog.accept)
+            error_dialog.exec_()
+            return
+
         cursor.execute("INSERT INTO Drug (drug_name, drug_description, drug_remaining, drug_eat, all_drug_recieve) VALUES (?, ?, ?, ?, ?)", (drug_name, drug_description, drug_amount, drug_eat, drug_amount))
         connection.commit()
         connection.close()
-
-        #  # เพิ่มเรียกใช้ฟังก์ชัน update_drug_list เพื่ออัพเดตรายการยาในหน้าคลังยา
-        # self.update_drug_list()
+        
+        # Disable save button
+        self.saveDrug_pushButton.setEnabled(False)
+        self.add_back_pushButton.setEnabled(False)
 
         # สร้าง QDialog และกำหนดสไตล์
         message_dialog = QtWidgets.QDialog(self.centralwidget)
@@ -380,20 +419,20 @@ class Ui_Add_drug(object):
 
     def backpage(self):
         from drug_List import Ui_drug_List
-        homepage_form = UI_Genarate()
-        homepage_form.widgetSet(UI_instance.Get(), Ui_drug_List)
+        backpage_form = UI_Genarate()
+        backpage_form.widgetSet(UI_instance.Get(), Ui_drug_List)
 
     def retranslateUi(self, Add_drug):
         _translate = QtCore.QCoreApplication.translate
         Add_drug.setWindowTitle(_translate("Add_drug", "เพิ่มยา"))
         self.label.setText(_translate("Add_drug", "   เพิ่มยา"))
-        self.drugName_label.setText(_translate("Add_drug", "ชื่อยา"))
+        self.drugName_label.setText(_translate("Add_drug", "ชื่อยา *"))
         self.drugDescribe_label.setText(_translate("Add_drug", "คำอธิบายยา"))
-        self.drugAll_label.setText(_translate("Add_drug", "จำนวนยาทั้งหมดที่มี (เม็ด)"))
+        self.drugAll_label.setText(_translate("Add_drug", "จำนวนยาทั้งหมดที่มี (เม็ด) *"))
         self.saveDrug_pushButton.setText(_translate("Add_drug", "บันทึกยา"))
         #self.listHave_pushButton.setText(_translate("Add_drug", "รายการยาที่มี"))
-        self.add_back_pushButton.setText(_translate("Add_drug", "หน้าหลัก"))
-        self.drugOne_label.setText(_translate("Add_drug", "จำนวนยาที่กินต่อ 1 มื้อ (เม็ด)"))
+        self.add_back_pushButton.setText(_translate("Add_drug", "ย้อนกลับ"))
+        self.drugOne_label.setText(_translate("Add_drug", "จำนวนยาที่กินต่อ 1 มื้อ (เม็ด) *"))
         
 import resources_rc
 

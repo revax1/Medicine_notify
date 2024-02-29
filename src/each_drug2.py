@@ -113,7 +113,7 @@ class Ui_each_drug2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.size_label.setFont(font)
         self.size_label.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -137,7 +137,7 @@ class Ui_each_drug2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_6.setFont(font)
         self.label_6.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -190,7 +190,7 @@ class Ui_each_drug2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_7.setFont(font)
         self.label_7.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -214,7 +214,7 @@ class Ui_each_drug2(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_8.setFont(font)
         self.label_8.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -262,10 +262,18 @@ class Ui_each_drug2(object):
         def save_changes():
             # ตรวจสอบข้อมูลที่ถูกแก้ไขและบันทึกลงฐานข้อมูลหรือตัวแปรที่เหมาะสม
             updated_data2 = drug_Update_instance.Get()
+
+
             updated_data2['drug_size'] = self.size_label.toPlainText()
             updated_data2['drug_new'] = self.label_6.toPlainText()
             updated_data2['drug_remaining_meal'] = self.label_7.text()
             updated_data2['all_drug_recieve'] = self.label_8.text()
+            
+            
+            # ทำการคำนวณค่า all_drug_recieve ใหม่
+            all_drug_recieve = int(updated_data2['all_drug_recieve'])
+            drug_new = int(updated_data2['drug_new'])
+            updated_data2['all_drug_recieve'] = str(all_drug_recieve + drug_new)
 
             # ส่งข้อมูลที่ถูกแก้ไขไปยังหน้าต่อไป
             drug_Update_2_instance.Set(updated_data2)
@@ -326,47 +334,20 @@ class Ui_each_drug2(object):
             # Convert the tuple to a list for modification
             drug_info_list = list(drug_info)
 
-            # เช็คว่า จำนวนยาที่ได้รับมาใหม่เป็นค่า 
-            if drug_info_list[12] == None:
+            drug_info_list[4] = drug_info_list[3] / drug_info_list[8]
+            
+            # ตั้งให้ drug_new มีค่าเริ่มต้นเป็น 0 แทน
+            if drug_info_list[12] == None: 
                 drug_info_list[12] = 0
-
-            # Check for None values before performing the division
-            drug_remaining, drug_eat = drug_info_list[3], drug_info_list[8]
-            if drug_remaining is not None and drug_eat is not None and drug_eat != 0:
-                drug_remaining_meal = int(drug_remaining / drug_eat)
-            else:
-                drug_remaining_meal = 0
-
-            # Update the modified values back to the list
-            drug_info_list[4] = drug_remaining_meal
-
-            # Additional modification
-            drug_new = drug_info_list[12]
-            all_drug_recieve =int(drug_info_list[9])
-            # print(drug_new)
-            # print(all_drug_recieve)
-            # if drug_new is not None:
-            #     all_drug_recieve = all_drug_recieve + drug_new
-            # else:
-            #     all_drug_recieve = all_drug_recieve
-
-            # Update the modified values back to the list
-            drug_info_list[9] = all_drug_recieve
 
             # Convert the list back to a tuple
             drug_info = tuple(drug_info_list)
 
             self.drug_id = drug_info[0]
             self.size_label.setText(f"{drug_info[13]}")
-            self.label_6.setText(f"{drug_info[12]}")
+            self.label_6.setText(f"0")
             self.label_7.setText(f"{drug_info[4]}")
             self.label_8.setText(f"{drug_info[9]}")
-
-        # print(drug_info)
-        
-    def closeAll(self):
-        self.each_drug.closeAll()
-        self.each_drug2.close()  # ปิดหน้าต่างที่เป็นส่วนสมาชิกของ Ui_med_pack2
 
     def retranslateUi(self, each_drug2):
         _translate = QtCore.QCoreApplication.translate

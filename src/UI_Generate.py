@@ -6,14 +6,18 @@ width, height = Scale_Width_Height()
 
 class UI_Genarate(object):
     def setupUi(self, UI, Widget):
-
+        # Show waiting dialog
+        self.waiting_dialog = WaitingDialog(widget_manager, UI)
+        
         self.centralwidget = QtWidgets.QWidget(UI)
-
+        
         self.widget = Widget()
         self.widget.setupUi(UI)
         
-    
         QtCore.QMetaObject.connectSlotsByName(UI)
+        self.waiting_dialog = WaitingDialog(widget_manager, UI_instance.Get())
+        
+        widget_manager.close_all_widgets()
 
     def widgetSet(self, UI, WidgetSet):
         Widget = WidgetSet

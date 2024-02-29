@@ -172,7 +172,7 @@ class Ui_data_check3(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_9.setFont(font)
         self.label_9.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -198,7 +198,6 @@ class Ui_data_check3(object):
 
         self.add_back_pushButton.clicked.connect(self.backpage)
         self.next_pushButton.clicked.connect(lambda: self.open_encrypt_check())
-        # self.next_pushButton.clicked.connect(self.closeAll)
 
          # Set up button press and release styling
         self.add_back_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.add_back_pushButton))
@@ -223,6 +222,11 @@ class Ui_data_check3(object):
         )
 
     def backpage(self):
+        # ทำการคำนวณค่า all_drug_recieve ใหม่
+        drug_remaining = float(self.updated_data2['drug_remaining'])
+        drug_eat = float(self.updated_data2['drug_eat'])
+        self.updated_data2['drug_remaining_meal'] = str(drug_remaining * drug_eat)
+        
         from data_checkui2 import Ui_data_check2
         backpage_form = UI_Genarate()
         backpage_form.widgetSet(UI_instance.Get(), Ui_data_check2)
@@ -280,14 +284,6 @@ class Ui_data_check3(object):
          # Add fetched meal data to the listWidget
         meal_names = [item[0] for item in meal_data]
         self.listWidget.addItems(meal_names)
-
-    def closeAll(self):
-        self.each_drug.closeAll()
-        self.each_drug2.closeAll()
-        self.select_meal.closeAll()
-        self.data_check1.closeAll()
-        self.data_check2.closeAll()
-        self.data_check3.close()
 
     def retranslateUi(self, data_check3):
         _translate = QtCore.QCoreApplication.translate

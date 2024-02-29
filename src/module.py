@@ -3,9 +3,7 @@ from __future__ import division
 from Utils import *
 from UI_Generate import *
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QLabel
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, QTimer, QLocale
+from PyQt5.QtCore import QThread, pyqtSignal, QObject
 
 import sys
 import time
@@ -20,14 +18,6 @@ import threading
 import requests
 import pygame
 
-from drug_List import Ui_drug_List
-from select_time import Ui_select_time
-# from pack_med import Ui_med_pack
-from pack import Ui_med_pack
-from sortDrug import Ui_sortDrug
-from drugTotal import Ui_drugTotal
-from wifi import Ui_wifi
-
 import sqlite3
 
 ########################### Thread ###########################
@@ -35,6 +25,7 @@ class SensorThread(QObject):
     finished = pyqtSignal()
     
     def __init__(self, parent=None):
+        
         super(SensorThread, self).__init__(parent)
         # self.run_thread()
         
@@ -57,7 +48,7 @@ class SensorThread(QObject):
         GPIO.setup(self.GPIO_PIR, GPIO.IN)
         GPIO.setup(self.led_pin, GPIO.OUT)
         
-        # self.pwm = Adafruit_PCA9685.PCA9685()
+        self.pwm = Adafruit_PCA9685.PCA9685()
         self.servo_min = 90
         self.servo_max = 570
         self.max_col = 2
@@ -66,7 +57,7 @@ class SensorThread(QObject):
         self.state_file = 'servo_state.txt'
         
         # Set frequency to 60hz, good for servos.
-        # self.pwm.set_pwm_freq(60)
+        self.pwm.set_pwm_freq(60)
         
     ####################### สำหรับ Ultrasonic Sensor ########################
 
@@ -119,20 +110,6 @@ class SensorThread(QObject):
                 print(f'Loaded state: {state[0]},{state[1]},{state[2]}')
                 return state
         return 0, 0, 0  # default values if the file doesn't exist
-
-
-    # Helper function to make setting a servo pulse width simpler.
-    # def set_servo_pulse(self, channel, pulse):
-    #     pulse_length = 1000000    # 1,000,000 us per second
-    #     pulse_length //= 60       # 60 Hz
-    #     print('{0}us per period'.format(pulse_length))
-    #     pulse_length //= 4096     # 12 bits of resolution
-    #     print('{0}us per bit'.format(pulse_length))
-    #     pulse *= 1000
-    #     pulse //= pulse_length
-    #     self.pwm.set_pwm(channel, 0, pulse)
-
-
 
     ############################# สำหรับ Audio ##############################
 
@@ -337,7 +314,6 @@ class SensorThread(QObject):
             print("No Motion Detected!")
             # pass
 
-
     ############################ LED #######################################
 
     def led_blink(self):
@@ -435,7 +411,7 @@ class SensorThread(QObject):
         response = requests.post(url, json=data, headers=headers)
         print(response.text)
         
-    #################### ส่ง request ให้ header ##############################
+    # ส่ง request ให้ header
 
     def send_request_with_header(self, url, header_name, header_value):
         headers = {header_name: header_value}
@@ -559,16 +535,35 @@ class SensorThread(QObject):
                             if current_time in [before_breakfast, after_breakfast, before_lunch, after_lunch, before_dinner, after_dinner, before_sleep]:
                                 meal_seconds = time_to_seconds(current_time)
                                 self.meal_seconds = time_to_seconds(current_time)           # meal_seconds เวอร์ชัน update time
-                                # self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
-                                # time.sleep(2)
+                                self.pwm.set_pwm(servoNum + 1, 0, self.servo_min)         #เซอร์โวตัวหลัง
+                                time.sleep(2)
                                 
-                                # self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
-                                # time.sleep(2)
-                                # self.pwm.set_pwm(servoNum, 0, self.servo_max)
-                                # time.sleep(1)
+                                self.pwm.set_pwm(servoNum, 0, self.servo_min)             #เซอร์โวตัวหน้า
+                                time.sleep(2)
+                                self.pwm.set_pwm(servoNum, 0, self.servo_max)
+                                time.sleep(1)
                                 
-                                # self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
-                                # time.sleep(2)
+                                self.pwm.set_pwm(servoNum + 1, 0, self.servo_max)
+                                time.sleep(2)
+                                
+                                # for i in range(0, 2048, 100):               # หมุน 180 องศา
+                                #     self.pwm.set_pwm(servoNum + 1, 0, i)
+                                    
+                                # time.sleep(3)
+
+                                # # หรือถ้าต้องการหมุนทีละขั้นต่อๆ ก็สามารถใช้ลูปเพื่อควบคุมได้
+                                # for i in range(0, 2048, 100):               # หมุน 180 องศา
+                                #     self.pwm.set_pwm(servoNum, 0, i)
+
+                                # time.sleep(3)
+
+                                # for i in range(2048, -1, -100):               # หมุน 180 องศา
+                                #     self.pwm.set_pwm(servoNum, 0, i)
+                                    
+                                # time.sleep(3)
+                                    
+                                # for i in range(2048, -1, -100):               # หมุน 180 องศา
+                                #     self.pwm.set_pwm(servoNum + 1, 0, i)
                                                                     
                                 col += 1
                                 
@@ -697,10 +692,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อก่อนนอน")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         bbed_meal_name = "มื้อก่อนนอน"
                                         self.not_receive_line(self.channel_access_token, bbed_meal_name)
                                         bbed_not_receive = True                     
@@ -710,10 +705,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเช้า ก่อนอาหาร")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         bb_meal_name = "มื้อเช้า ก่อนอาหาร"
                                         self.not_receive_line(self.channel_access_token, bb_meal_name)
                                         bb_not_receive = True                            
@@ -723,10 +718,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเช้า หลังอาหาร")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         ab_meal_name = "มื้อเช้า หลังอาหาร"
                                         self.not_receive_line(self.channel_access_token, ab_meal_name)
                                         ab_not_receive = True                                  
@@ -737,10 +732,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเที่ยง ก่อนอาหาร")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         bl_meal_name = "มื้อเที่ยง ก่อนอาหาร"
                                         self.not_receive_line(self.channel_access_token, bl_meal_name)  
                                         bl_not_receive = True                               
@@ -751,10 +746,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเที่ยง หลังอาหาร")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         al_meal_name = "มื้อเที่ยง หลังอาหาร"
                                         self.not_receive_line(self.channel_access_token, al_meal_name)
                                         al_not_receive = True                                 
@@ -765,10 +760,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเย็น ก่อนอาหาร")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         bd_meal_name = "มื้อเย็น ก่อนอาหาร"
                                         self.not_receive_line(self.channel_access_token, bd_meal_name)
                                         bd_not_receive = True                                 
@@ -779,10 +774,10 @@ class SensorThread(QObject):
                                         time.sleep(3)
                                         print("ผู้สูงอายุไม่มารับยา มื้อเย็น หลังอาหาร")
                                         notify_time = 1
-                                        # self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
-                                        # time.sleep(2)
-                                        # self.pwm.set_pwm(15, 0, self.servo_max)
-                                        # time.sleep(1)
+                                        self.pwm.set_pwm(15, 0, self.servo_min)             # เซอร์โวมอเตอร์สำหรับช่องทิ้งยา
+                                        time.sleep(2)
+                                        self.pwm.set_pwm(15, 0, self.servo_max)
+                                        time.sleep(1)
                                         ad_meal_name = "มื้อเย็น หลังอาหาร"
                                         self.not_receive_line(self.channel_access_token, ad_meal_name) 
                                         bd_not_receive = True                             
@@ -832,7 +827,7 @@ class SensorThread(QObject):
                     row = 0
                     servoNum = 0
                     self.save_state(col, row, servoNum)  # Save the current state
-                      
+        
         except KeyboardInterrupt:
             print("\nถูกหยุดการทำงานโดยผู้ใช้")
             GPIO.cleanup()                

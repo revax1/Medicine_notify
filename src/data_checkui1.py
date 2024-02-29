@@ -117,7 +117,7 @@ class Ui_data_check1(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_2.setFont(font)
         self.label_2.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -140,7 +140,7 @@ class Ui_data_check1(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_3.setFont(font)
         self.label_3.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -190,7 +190,7 @@ class Ui_data_check1(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_4.setFont(font)
         self.label_4.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -213,7 +213,7 @@ class Ui_data_check1(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_5.setFont(font)
         self.label_5.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -329,31 +329,14 @@ class Ui_data_check1(object):
         # Set the data in the labels and listWidget
         self.label_2.setText(f"{self.updated_data2['drug_name']}")
         self.label_3.setText(f"{self.updated_data2['drug_description']}")
+        
+        # ทำการคำนวณค่า all_drug_recieve ใหม่
+        drug_remaining = float(self.updated_data2['drug_remaining'])
+        drug_new = int(self.updated_data2['drug_new'])
+        self.updated_data2['drug_remaining'] = str(drug_remaining + drug_new)
+        
         self.label_4.setText(f"{self.updated_data2['drug_remaining']}")
         self.label_5.setText(f"{self.updated_data2['drug_eat']}")
-
-        # self.label_6.setText(f"{self.updated_data2['drug_new']}")
-        # self.label_7.setText(f"{self.updated_data2['drug_remaining_meal']}")
-        # self.label_8.setText(f"{self.updated_data2['all_drug_recieve']}")
-        # self.label_9.setText(f"{self.updated_data2['day_start']}")               ใช้
-
-        #  # Clear the listWidget before adding new items
-        # self.listWidget.clear()                                                  ใช้
-
-        # # Add meal selection data to the listWidget
-        # meal_data = self.updated_data2.get('meals', [])
-        # print(f"Meal Data: {meal_data}")
-        # self.listWidget.addItems(meal_data)
-
-        #  # Add fetched meal data to the listWidget
-        # meal_names = [item[0] for item in meal_data]                             ใช้
-        # self.listWidget.addItems(meal_names)
-
-    def closeAll(self):
-        self.each_drug.closeAll()
-        self.each_drug2.closeAll()
-        self.select_meal.closeAll()
-        self.data_check1.close()
 
     def retranslateUi(self, data_check1):
         _translate = QtCore.QCoreApplication.translate

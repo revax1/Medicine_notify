@@ -141,7 +141,7 @@ class Ui_each_drug(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_2.setFont(font)
         self.label_2.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -165,7 +165,7 @@ class Ui_each_drug(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_3.setFont(font)
         self.label_3.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -217,7 +217,7 @@ class Ui_each_drug(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_4.setFont(font)
         self.label_4.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -241,7 +241,7 @@ class Ui_each_drug(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_5.setFont(font)
         self.label_5.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -288,6 +288,7 @@ class Ui_each_drug(object):
 
         def delete_drug():
             drug_name = drug_name_instance.Get()
+            
             drug_name = self.label_2.toPlainText()  # รับชื่อยาจาก Label
 
             # Use the custom message box
@@ -299,7 +300,12 @@ class Ui_each_drug(object):
             if reply == QtWidgets.QMessageBox.Yes:
                 connection = sqlite3.connect("/home/pi/Documents/Medicine_notify/src/medicine.db")
                 cursor = connection.cursor()
+                cursor.execute("SELECT drug_id FROM Drug WHERE drug_name = ?", (drug_name,))
+                result = cursor.fetchone()
+                print(result)
                 cursor.execute("DELETE FROM Drug WHERE drug_name = ?", (drug_name,))
+                
+                cursor.execute("DELETE FROM Drug_handle WHERE drug_id = ?", result)
                 connection.commit()
                 connection.close()
                 self.backpage()  # ปิดหน้าต่างหลังจากลบเสร็จ
@@ -354,7 +360,7 @@ class Ui_each_drug(object):
         self.each_drug.close()  # ปิดหน้าต่างที่เป็นส่วนสมาชิกของ Ui_med_pack2
 
     def open_each_drug2(self):
-        print(f"each_drug {drug_Update_instance.Get()}")
+        # print(f"each_drug {drug_Update_instance.Get()}")
 
         each_drug_instance.Set(self)
         drug_list_instance.Set(self.drug_List)
@@ -367,6 +373,7 @@ class Ui_each_drug(object):
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM Drug WHERE drug_name = ?", (drug_name,))
         drug_info = cursor.fetchone()
+        print(drug_info)
         connection.close()
 
         if drug_info:
@@ -390,10 +397,10 @@ class Ui_each_drug(object):
         self.add_back_pushButton.setText(_translate("each_drug", "ย้อนกลับ"))
         #self.edit_pushButton.setText(_translate("each_drug", "แก้ไข"))
         self.delete_pushButton.setText(_translate("each_drug", "ลบ"))
-        self.drugName_label.setText(_translate("each_drug", "ชื่อยา"))
+        self.drugName_label.setText(_translate("each_drug", "ชื่อยา *"))
         self.drugDescribe_label.setText(_translate("each_drug", "คำอธิบายยา"))
-        self.drugOne_label.setText(_translate("each_drug", "จำนวนยาที่กินต่อ 1 มื้อ (เม็ด)"))
-        self.drugAll_label.setText(_translate("each_drug", "จำนวนยาทั้งหมดที่มี (เม็ด)"))
+        self.drugOne_label.setText(_translate("each_drug", "จำนวนยาที่กินต่อ 1 มื้อ (เม็ด) *"))
+        self.drugAll_label.setText(_translate("each_drug", "จำนวนยาทั้งหมดที่มี (เม็ด) *"))
         self.next_pushButton.setText(_translate("each_drug", "ถัดไป"))
         self.label_2.setText(_translate("each_drug", "ชื่อยา"))
         self.label_3.setText(_translate("each_drug", "คำอธิบายยา"))

@@ -120,7 +120,7 @@ class Ui_encrypt_check(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_2.setFont(font)
         self.label_2.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -143,7 +143,7 @@ class Ui_encrypt_check(object):
         font = QtGui.QFont()
         font.setPointSize(int(12 * height))
         font.setBold(False)
-        font.setWeight(int(50 * width))
+        font.setWeight(int(25 * width))
         self.label_3.setFont(font)
         self.label_3.setStyleSheet("border-radius: 9px;\n"
 "color: rgb(0, 0, 0);\n"
@@ -215,6 +215,7 @@ class Ui_encrypt_check(object):
                         drug_remaining = ?,
                         drug_eat = ?,
                         drug_new = ?,
+                        all_drug_recieve = ?,
                         day_start = ?,
                         drug_size = ?
                     WHERE drug_id = ?
@@ -225,6 +226,7 @@ class Ui_encrypt_check(object):
                     self.updated_data2['drug_remaining'],
                     self.updated_data2['drug_eat'],
                     self.updated_data2['drug_new'],
+                    self.updated_data2['all_drug_recieve'],
                     self.updated_data2['day_start'],
                     self.updated_data2['drug_size'],
                     self.updated_data2['drug_id']
@@ -235,6 +237,9 @@ class Ui_encrypt_check(object):
                 connection.commit()
                 QtWidgets.QMessageBox.information(encrypt_check, "Success", "ข้อมูลถูกบันทึกเรียบร้อยแล้ว")
                 # QtWidgets.QMessageBox.information.setStyleSheet("background-color: rgb(255, 255, 255);")
+                from main import Ui_Medicine_App
+                homepage_form = UI_Genarate()
+                homepage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
                 connection.close()
                 
                 
@@ -243,7 +248,6 @@ class Ui_encrypt_check(object):
                 QMessageBox.warning(self.centralwidget, "รหัสไม่ถูกต้อง", "กรุณากรอกรหัสให้ถูกต้อง")
 
         self.next_pushButton.clicked.connect(check_code)
-        self.next_pushButton.clicked.connect(self.homepage)
 
          # Set up button press and release styling
         self.add_back_pushButton.pressed.connect(lambda: self.set_button_pressed_style(self.add_back_pushButton))
@@ -279,11 +283,6 @@ class Ui_encrypt_check(object):
         from data_checkui3 import Ui_data_check3
         backpage_form = UI_Genarate()
         backpage_form.widgetSet(UI_instance.Get(), Ui_data_check3)
-
-    def homepage(self):
-        from main import Ui_Medicine_App
-        homepage_form = UI_Genarate()
-        homepage_form.widgetSet(UI_instance.Get(), Ui_Medicine_App)
 
     def retranslateUi(self, encrypt_check):
         _translate = QtCore.QCoreApplication.translate
